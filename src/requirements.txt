@@ -1,0 +1,4 @@
+bencoder
+colorama
+requests
+pytest
