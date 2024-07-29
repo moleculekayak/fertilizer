@@ -2,6 +2,7 @@ from .support import SetupTeardown
 
 from src.trackers import RedTracker, OpsTracker
 
+
 class TestTrackerMethods(SetupTeardown):
   def test_source_flags_for_search(self):
     assert RedTracker.source_flags_for_search() == [b"RED", b"PTH"]

@@ -2,6 +2,7 @@ from time import time
 
 from colorama import Fore
 
+
 class Status:
   def __init__(self, name, color, total):
     self.count = 0
@@ -21,11 +22,12 @@ class Status:
 
   def report(self) -> str:
     try:
-      percentage = self.count/self.total*100
+      percentage = self.count / self.total * 100
     except ZeroDivisionError:
       percentage = 0
 
     return f"*\t{self.color}{self.name}{Fore.RESET}: {self.count} ({percentage:.0f}%)"
+
 
 class Progress:
   def __init__(self, total):
@@ -42,7 +44,7 @@ class Progress:
     divider = f"\n{'-' * 50}"
     time_taken = time() - self.start_time
     torrent_plural = "torrent" if self.total == 1 else "torrents"
-    messages = '\n'.join(
+    messages = "\n".join(
       x.report()
       for x in (
         self.generated,

@@ -4,6 +4,7 @@ from .support import SetupTeardown
 
 from src.args import parse_args
 
+
 class TestArgs(SetupTeardown):
   def test_parses_args(self):
     args = parse_args(["-i", "foo", "-o", "bar"])
@@ -15,7 +16,7 @@ class TestArgs(SetupTeardown):
   def test_requires_input_directory(self, capsys):
     with pytest.raises(SystemExit) as excinfo:
       parse_args(["-o", "bar"])
-    
+
     captured = capsys.readouterr()
 
     assert excinfo.value.code == 2
@@ -24,7 +25,7 @@ class TestArgs(SetupTeardown):
   def test_requires_output_directory(self, capsys):
     with pytest.raises(SystemExit) as excinfo:
       parse_args(["-i", "foo"])
-    
+
     captured = capsys.readouterr()
 
     assert excinfo.value.code == 2

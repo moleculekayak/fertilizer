@@ -6,11 +6,12 @@ from .progress import Progress
 from .torrent import generate_new_torrent_from_file
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 
+
 def scan_torrent_directory(
-    input_directory: str,
-    output_directory: str, 
-    red_api: RedAPI,
-    ops_api: OpsAPI
+  input_directory: str,
+  output_directory: str,
+  red_api: RedAPI,
+  ops_api: OpsAPI,
 ) -> None:
   """
   Scans a directory for .torrent files and generates new ones using the tracker APIs.
@@ -36,10 +37,14 @@ def scan_torrent_directory(
     print(f"({i}/{p.total}) {basename}")
 
     try:
-      new_tracker, new_torrent_filepath = generate_new_torrent_from_file(torrent_path, output_directory, red_api, ops_api)
+      new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
+        torrent_path, output_directory, red_api, ops_api
+      )
 
       if new_torrent_filepath:
-        p.generated.print(f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'.")
+        p.generated.print(
+          f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
+        )
     except TorrentDecodingError as e:
       p.error.print(str(e))
       continue

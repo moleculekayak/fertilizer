@@ -18,4 +18,3 @@ if __name__ == "__main__":
   except FileNotFoundError as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
-

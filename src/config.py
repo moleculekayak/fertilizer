@@ -3,6 +3,7 @@ import os
 
 from .errors import ConfigKeyError
 
+
 class Config:
   """
   Class for loading and accessing the config file.
@@ -27,7 +28,7 @@ class Config:
   @property
   def ops_key(self) -> str:
     return self.__get_key("OPS")
-  
+
   def __get_key(self, key):
     try:
       return self._json[key]

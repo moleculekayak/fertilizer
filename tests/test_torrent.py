@@ -5,34 +5,22 @@ import requests_mock
 
 from .support import get_torrent_path, SetupTeardown
 
-from src.api import RedAPI, OpsAPI
 from src.trackers import RedTracker
 from src.parser import get_torrent_data
 from src.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
-from src.torrent import generate_new_torrent_from_file, generate_torrent_output_filepath, get_torrent_id, generate_torrent_url
-
+from src.torrent import (
+  generate_new_torrent_from_file,
+  generate_torrent_output_filepath,
+  get_torrent_id,
+  generate_torrent_url,
+)
 
 
 class TestGenerateNewTorrentFromFile(SetupTeardown):
-  TORRENT_SUCCESS_RESPONSE = {
-    "status": "success",
-    "response": {"torrent": {"filePath": "foo", "id": 123}}
-  }
-
-  TORRENT_KNOWN_BAD_RESPONSE = {
-    "status": "failure",
-    "error": "bad hash parameter"
-  }
-
-  TORRENT_UNKNOWN_BAD_RESPONSE = {
-    "status": "failure",
-    "error": "unknown error"
-  }
-
-  ANNOUNCE_SUCCESS_RESPONSE = {
-    "status": "success",
-    "response": {"passkey": "bar"}
-  }
+  TORRENT_SUCCESS_RESPONSE = {"status": "success", "response": {"torrent": {"filePath": "foo", "id": 123}}}
+  TORRENT_KNOWN_BAD_RESPONSE = {"status": "failure", "error": "bad hash parameter"}
+  TORRENT_UNKNOWN_BAD_RESPONSE = {"status": "failure", "error": "unknown error"}
+  ANNOUNCE_SUCCESS_RESPONSE = {"status": "success", "response": {"passkey": "bar"}}
 
   def test_saves_new_torrent_from_red_to_ops(self, red_api, ops_api):
     with requests_mock.Mocker() as m:
@@ -72,7 +60,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       torrent_path = get_torrent_path("ops_source")
       new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
-      parsed_torrent = get_torrent_data(filepath)
+      get_torrent_data(filepath)
 
       assert os.path.isfile(filepath)
       assert new_tracker == RedTracker
@@ -83,7 +71,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     with pytest.raises(TorrentDecodingError) as excinfo:
       torrent_path = get_torrent_path("broken")
       generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
-    
+
     assert str(excinfo.value) == "Error decoding torrent file"
 
   def test_raises_error_if_tracker_not_found(self, red_api, ops_api):
@@ -102,7 +90,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       with requests_mock.Mocker() as m:
         m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
         m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
-        
+
         torrent_path = get_torrent_path("red_source")
         generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
@@ -131,6 +119,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
     assert str(excinfo.value) == "An unknown error occurred in the API response from OPS"
 
+
 class TestGenerateTorrentOutputFilepath(SetupTeardown):
   API_RESPONSE = {"response": {"torrent": {"filePath": "foo"}}}
 
@@ -150,10 +139,12 @@ class TestGenerateTorrentOutputFilepath(SetupTeardown):
     assert str(excinfo.value) == f"Torrent file already exists at {filepath}"
     os.remove(filepath)
 
+
 class TestGetTorrentId(SetupTeardown):
   def test_returns_torrent_id_from_response(self):
     response = {"response": {"torrent": {"id": 123}}}
     assert get_torrent_id(response) == 123
+
 
 class TestGenerateTorrentUrl(SetupTeardown):
   def test_composes_a_url_from_site_and_id(self):

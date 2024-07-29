@@ -4,11 +4,13 @@ from hashlib import sha1
 
 from .trackers import RedTracker, OpsTracker
 
+
 def get_source(torrent_data: dict) -> bytes:
   try:
     return torrent_data[b"info"][b"source"]
   except KeyError:
     return None
+
 
 def get_announce_url(torrent_data: dict) -> bytes:
   try:
@@ -16,17 +18,19 @@ def get_announce_url(torrent_data: dict) -> bytes:
   except KeyError:
     return None
 
-def get_origin_tracker(torrent_data: dict) -> (RedTracker | OpsTracker | None):
+
+def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   source = get_source(torrent_data) or b""
   announce_url = get_announce_url(torrent_data) or b""
 
   if source in RedTracker.source_flags_for_search() or RedTracker.announce_url() in announce_url:
     return RedTracker
-  
+
   if source in OpsTracker.source_flags_for_search() or OpsTracker.announce_url() in announce_url:
     return OpsTracker
-  
+
   return None
+
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
   torrent_data = copy.deepcopy(torrent_data)
@@ -37,6 +41,7 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str
 
   return hash
 
+
 def get_torrent_data(filename: str) -> dict:
   try:
     with open(filename, "rb") as f:
@@ -44,6 +49,7 @@ def get_torrent_data(filename: str) -> dict:
     return data
   except Exception:
     return None
+
 
 def save_torrent_data(filename: str, torrent_data: dict) -> str:
   with open(filename, "wb") as f:

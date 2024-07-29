@@ -1,7 +1,9 @@
 import os
 
+
 def get_torrent_path(name):
   return f"tests/support/torrents/{name}.torrent"
+
 
 class SetupTeardown:
   def setup_method(self):

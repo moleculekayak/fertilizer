@@ -6,6 +6,7 @@ from .support import SetupTeardown
 from src.filesystem import mkdir_p, assert_path_exists, list_files_of_extension
 # from src.errors import ConfigKeyError
 
+
 class TestMkdirP(SetupTeardown):
   def test_makes_directory(self):
     directory_path = "/tmp/test_mkdir_p/nested"
@@ -20,6 +21,7 @@ class TestMkdirP(SetupTeardown):
 
     assert directory_path == mkdir_p(directory_path)
     os.rmdir(directory_path)
+
 
 class TestAssertPathExists(SetupTeardown):
   def test_raises_error_on_missing_path(self):
@@ -36,6 +38,7 @@ class TestAssertPathExists(SetupTeardown):
 
     assert path == assert_path_exists(path)
     os.remove(path)
+
 
 class TestListFilesOfExtension(SetupTeardown):
   def test_lists_files_of_extension(self):

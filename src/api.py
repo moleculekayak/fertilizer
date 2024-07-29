@@ -6,11 +6,12 @@ import requests
 
 from .errors import handle_error, AuthenticationError
 
+
 class GazelleAPI:
   """
   Methods for interacting with Gazelle-based trackers like RED and OPS.
   """
-  
+
   def __init__(self, site_url, tracker_url, auth_header, rate_limit):
     self._s = requests.session()
     self._s.headers.update(auth_header)
@@ -32,7 +33,7 @@ class GazelleAPI:
     """
     Returns the account information of the user. Useful for fetching the passkey for the announce URL.
     """
-    
+
     r = self.__get("index")
     if r["status"] != "success":
       raise AuthenticationError(r["error"])
@@ -40,7 +41,7 @@ class GazelleAPI:
 
   def find_torrent(self, torrent_hash: str) -> dict:
     return self.__get("torrent", hash=torrent_hash)
-    
+
   @property
   def announce_url(self) -> str:
     if self._announce_url is None:
@@ -74,29 +75,23 @@ class GazelleAPI:
           description=err[0],
           exception_details=err[1],
           wait_time=self._retry_wait_time(current_retries),
-          extra_description=f" (attempt {current_retries}/{self._max_retries})"
+          extra_description=f" (attempt {current_retries}/{self._max_retries})",
         )
         current_retries += 1
       else:
         sleep(0.2)
 
-    handle_error(
-        description="Maximum number of retries reached",
-        exit_=True
-    )
+    handle_error(description="Maximum number of retries reached", should_exit=True)
 
   def __get_announce_url(self):
     try:
       account_info = self.get_account_info()
     except AuthenticationError as e:
-      handle_error(
-        description=f"Authentication to {self.sitename} failed",
-        exception_details=e,
-        exit_=True,
-      )
+      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=e, should_exit=True)
 
     passkey = account_info["response"]["passkey"]
     return f"{self.tracker_url}/{passkey}/announce"
+
 
 class OpsAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):
@@ -106,6 +101,7 @@ class OpsAPI(GazelleAPI):
       auth_header={"Authorization": f"token {api_key}"},
       rate_limit=delay_in_seconds,
     )
+
 
 class RedAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):

@@ -9,26 +9,12 @@ from .support import SetupTeardown, get_torrent_path
 
 from src.scanner import scan_torrent_directory
 
+
 class TestScanTorrentDirectory(SetupTeardown):
-  TORRENT_SUCCESS_RESPONSE = {
-    "status": "success",
-    "response": {"torrent": {"filePath": "foo", "id": 123}}
-  }
-
-  TORRENT_KNOWN_BAD_RESPONSE = {
-    "status": "failure",
-    "error": "bad hash parameter"
-  }
-
-  TORRENT_UNKNOWN_BAD_RESPONSE = {
-    "status": "failure",
-    "error": "unknown error"
-  }
-
-  ANNOUNCE_SUCCESS_RESPONSE = {
-    "status": "success",
-    "response": {"passkey": "bar"}
-  }
+  TORRENT_SUCCESS_RESPONSE = {"status": "success", "response": {"torrent": {"filePath": "foo", "id": 123}}}
+  TORRENT_KNOWN_BAD_RESPONSE = {"status": "failure", "error": "bad hash parameter"}
+  TORRENT_UNKNOWN_BAD_RESPONSE = {"status": "failure", "error": "unknown error"}
+  ANNOUNCE_SUCCESS_RESPONSE = {"status": "success", "response": {"passkey": "bar"}}
 
   def setup_method(self):
     super().setup_method()
@@ -59,7 +45,10 @@ class TestScanTorrentDirectory(SetupTeardown):
       scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api)
       captured = capsys.readouterr()
 
-      assert f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/foo [OPS].torrent'.{Fore.RESET}" in captured.out
+      assert (
+        f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/foo [OPS].torrent'.{Fore.RESET}"
+        in captured.out
+      )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
 
   def test_lists_undecodable_torrents(self, capsys, red_api, ops_api):
@@ -77,7 +66,9 @@ class TestScanTorrentDirectory(SetupTeardown):
     scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api)
     captured = capsys.readouterr()
 
-    assert f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+    assert (
+      f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+    )
     assert f"{Fore.LIGHTBLACK_EX}Skipped{Fore.RESET}: 1" in captured.out
 
   def test_lists_already_existing_torrents(self, capsys, red_api, ops_api):
@@ -135,11 +126,19 @@ class TestScanTorrentDirectory(SetupTeardown):
 
       assert "Analyzed 4 local torrents" in captured.out
 
-      assert f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/foo [OPS].torrent'.{Fore.RESET}" in captured.out
-      assert f"{Fore.LIGHTGREEN_EX}Found with source 'RED' and generated as '/tmp/output/foo [RED].torrent'.{Fore.RESET}" in captured.out
+      assert (
+        f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/foo [OPS].torrent'.{Fore.RESET}"
+        in captured.out
+      )
+      assert (
+        f"{Fore.LIGHTGREEN_EX}Found with source 'RED' and generated as '/tmp/output/foo [RED].torrent'.{Fore.RESET}"
+        in captured.out
+      )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 2" in captured.out
 
-      assert f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+      assert (
+        f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+      )
       assert f"{Fore.LIGHTBLACK_EX}Skipped{Fore.RESET}: 1" in captured.out
 
       assert f"{Fore.RED}Error decoding torrent file{Fore.RESET}" in captured.out

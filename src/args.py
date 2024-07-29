@@ -1,6 +1,7 @@
 import sys
 import argparse
 
+
 def parse_args(args=None):
   args = sys.argv[1:] if args is None else args
 
@@ -44,7 +45,7 @@ def parse_args(args=None):
     "--config-file",
     type=str,
     help="path to a configuration file",
-    default="src/settings.json"
+    default="src/settings.json",
   )
 
   return parser.parse_args(args)

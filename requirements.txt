@@ -3,3 +3,4 @@ colorama
 requests
 pytest
 requests-mock
+ruff
