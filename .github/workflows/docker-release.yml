@@ -72,7 +72,7 @@ jobs:
           # If the event is a release, use the release_arch, otherwise use the
           # platforms input if present, falling back to dev_arch
           platforms: ${{ github.event_name == 'release' && env.release_arch || (github.event.inputs.platforms || env.dev_arch) }}
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
