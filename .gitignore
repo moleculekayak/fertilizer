@@ -162,3 +162,4 @@ cython_debug/
 .vscode/tasks.json
 
 .env
+tests/support/torrents/example.torrent

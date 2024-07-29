@@ -1,22 +1,35 @@
 import json
 import os
 
+from .errors import ConfigKeyError
 
 class Config:
-    def __init__(self):
-        cwd = os.path.dirname(__file__)
-        config_file = os.path.join(cwd, "settings.json")
-        
-        if not os.path.exists(config_file):
-            raise FileNotFoundError(f"settings.json does not exist in '{cwd}'.")
+  """
+  Class for loading and accessing the config file.
+  """
 
-        with open(config_file, "r", encoding="utf-8") as f:
-            self._j = json.loads(f.read())
+  def __init__(self):
+    self._json = {}
 
-    @property
-    def red_key(self):
-        return self._j["RED"]
+  def load(self, config_filepath: str):
+    if not os.path.exists(config_filepath):
+      raise FileNotFoundError(f"{config_filepath} does not exist.")
 
-    @property
-    def ops_key(self):
-        return self._j["OPS"]
+    with open(config_filepath, "r", encoding="utf-8") as f:
+      self._json = json.loads(f.read())
+
+    return self
+
+  @property
+  def red_key(self) -> str:
+    return self.__get_key("RED")
+
+  @property
+  def ops_key(self) -> str:
+    return self.__get_key("OPS")
+  
+  def __get_key(self, key):
+    try:
+      return self._json[key]
+    except KeyError:
+      raise ConfigKeyError(f"Key '{key}' not found in config file.")

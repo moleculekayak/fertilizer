@@ -1,0 +1,12 @@
+services:
+  fertilizer:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - '.:/app'
+    command: bash -c "/app/docker_start"
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
