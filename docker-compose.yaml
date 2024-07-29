@@ -5,8 +5,13 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - '.:/app'
-    command: bash -c "/app/docker_start"
+    entrypoint: /bin/bash
+    command: 
+      - -c
+      - |
+        echo 'Starting Fertilizer...'
+        trap "echo Shutting down; exit 0" SIGTERM SIGINT SIGKILL
+        sleep infinity &
+        wait
     stdin_open: true
     tty: true
-    env_file:
-      - .env

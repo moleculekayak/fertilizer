@@ -32,8 +32,8 @@ class TestScanTorrentDirectory(SetupTeardown):
 
   def setup_method(self):
     super().setup_method()
-    shutil.rmtree("/tmp/input")
-    shutil.rmtree("/tmp/output")
+    shutil.rmtree("/tmp/input", ignore_errors=True)
+    shutil.rmtree("/tmp/output", ignore_errors=True)
     os.makedirs("/tmp/input")
     os.makedirs("/tmp/output")
 

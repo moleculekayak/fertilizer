@@ -1,6 +1,8 @@
-#!/bin/bash
+#!/bin/sh
 
-echo "Starting Fertilizer..."
-trap "echo Shutting down; exit 0" SIGTERM SIGINT SIGKILL
-sleep infinity &
-wait
+if [ ! -f /config/settings.json ]; then
+  cp /app/src/settings.json /config/settings.json
+  rm /app/src/settings.json
+fi
+
+$@
