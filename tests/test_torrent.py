@@ -8,12 +8,7 @@ from .support import get_torrent_path, SetupTeardown
 from src.trackers import RedTracker
 from src.parser import get_torrent_data
 from src.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
-from src.torrent import (
-  generate_new_torrent_from_file,
-  generate_torrent_output_filepath,
-  get_torrent_id,
-  generate_torrent_url,
-)
+from src.torrent import generate_new_torrent_from_file, generate_torrent_output_filepath
 
 
 class TestGenerateNewTorrentFromFile(SetupTeardown):
@@ -76,6 +71,24 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
     assert str(excinfo.value) == "Torrent not from OPS or RED based on source or announce URL"
 
+  def test_raises_error_if_infohash_found_in_input(self, red_api, ops_api):
+    input_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "foo"}
+
+    with pytest.raises(TorrentAlreadyExistsError) as excinfo:
+      torrent_path = get_torrent_path("red_source")
+      generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, input_hashes)
+
+    assert str(excinfo.value) == "Torrent already exists in input directory as foo"
+
+  def test_raises_error_if_infohash_found_in_output(self, red_api, ops_api):
+    output_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "bar"}
+
+    with pytest.raises(TorrentAlreadyExistsError) as excinfo:
+      torrent_path = get_torrent_path("red_source")
+      generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, {}, output_hashes)
+
+    assert str(excinfo.value) == "Torrent already exists in output directory as bar"
+
   def test_raises_error_if_torrent_already_exists(self, red_api, ops_api):
     filepath = generate_torrent_output_filepath(self.TORRENT_SUCCESS_RESPONSE, "OPS", "/tmp")
     with open(filepath, "w") as f:
@@ -133,15 +146,3 @@ class TestGenerateTorrentOutputFilepath(SetupTeardown):
 
     assert str(excinfo.value) == f"Torrent file already exists at {filepath}"
     os.remove(filepath)
-
-
-class TestGetTorrentId(SetupTeardown):
-  def test_returns_torrent_id_from_response(self):
-    response = {"response": {"torrent": {"id": 123}}}
-    assert get_torrent_id(response) == 123
-
-
-class TestGenerateTorrentUrl(SetupTeardown):
-  def test_composes_a_url_from_site_and_id(self):
-    response = generate_torrent_url("https://foo.bar", 123)
-    assert response == "https://foo.bar/torrents.php?torrentid=123"

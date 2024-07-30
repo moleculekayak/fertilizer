@@ -4,6 +4,7 @@ from .api import RedAPI, OpsAPI
 from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
 from .torrent import generate_new_torrent_from_file
+from .parser import get_torrent_data, calculate_infohash
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 
 
@@ -29,10 +30,15 @@ def scan_torrent_directory(
 
   input_directory = assert_path_exists(input_directory)
   output_directory = mkdir_p(output_directory)
-  local_torrents = list_files_of_extension(input_directory, ".torrent")
-  p = Progress(len(local_torrents))
 
-  for i, torrent_path in enumerate(local_torrents, 1):
+  input_torrents = list_files_of_extension(input_directory, ".torrent")
+  output_torrents = list_files_of_extension(output_directory, ".torrent")
+  input_infohashes = __collect_infohashes_from_files(input_torrents)
+  output_infohashes = __collect_infohashes_from_files(output_torrents)
+
+  p = Progress(len(input_torrents))
+
+  for i, torrent_path in enumerate(input_torrents, 1):
     basename = os.path.basename(torrent_path)
     print(f"({i}/{p.total}) {basename}")
 
@@ -42,6 +48,8 @@ def scan_torrent_directory(
         output_directory,
         red_api,
         ops_api,
+        input_infohashes,
+        output_infohashes,
       )
 
       p.generated.print(
@@ -53,8 +61,8 @@ def scan_torrent_directory(
     except UnknownTrackerError as e:
       p.skipped.print(str(e))
       continue
-    except TorrentAlreadyExistsError:
-      p.already_exists.print("Found, but the output .torrent already exists.")
+    except TorrentAlreadyExistsError as e:
+      p.already_exists.print(str(e))
       continue
     except TorrentNotFoundError as e:
       p.not_found.print(str(e))
@@ -64,3 +72,16 @@ def scan_torrent_directory(
       continue
 
   return p.report()
+
+
+def __collect_infohashes_from_files(files: list[str]) -> dict:
+  infohash_dict = {}
+
+  for filename in files:
+    torrent_data = get_torrent_data(filename)
+
+    if torrent_data:
+      infohash = calculate_infohash(torrent_data)
+      infohash_dict[infohash] = torrent_data[b"info"][b"name"].decode()
+
+  return infohash_dict

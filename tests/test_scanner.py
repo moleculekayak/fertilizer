@@ -68,7 +68,41 @@ class TestScanTorrentDirectory(SetupTeardown):
       print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
       captured = capsys.readouterr()
 
-      assert f"{Fore.LIGHTYELLOW_EX}Found, but the output .torrent already exists.{Fore.RESET}" in captured.out
+      assert (
+        f"{Fore.LIGHTYELLOW_EX}Torrent file already exists at /tmp/output/foo [OPS].torrent{Fore.RESET}" in captured.out
+      )
+      assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 1" in captured.out
+
+  def test_considers_matching_input_torrents_as_already_existing(self, capsys, red_api, ops_api):
+    shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+    shutil.copy(get_torrent_path("ops_source"), "/tmp/input/ops_source.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      captured = capsys.readouterr()
+
+      assert (
+        f"{Fore.LIGHTYELLOW_EX}Torrent already exists in input directory as Big Buck Bunny{Fore.RESET}" in captured.out
+      )
+      assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 2" in captured.out
+
+  def test_considers_matching_output_torrents_as_already_existing(self, capsys, red_api, ops_api):
+    shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+    shutil.copy(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      captured = capsys.readouterr()
+
+      assert (
+        f"{Fore.LIGHTYELLOW_EX}Torrent already exists in output directory as Big Buck Bunny{Fore.RESET}" in captured.out
+      )
       assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 1" in captured.out
 
   def test_lists_not_found_torrents(self, capsys, red_api, ops_api):
@@ -98,8 +132,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       assert f"{Fore.RED}Errors{Fore.RESET}: 1" in captured.out
 
   def test_reports_progress_for_mix_of_torrents(self, capsys, red_api, ops_api):
-    shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
-    shutil.copy(get_torrent_path("ops_source"), "/tmp/input/ops_source.torrent")
+    shutil.copy(get_torrent_path("ops_announce"), "/tmp/input/ops_announce.torrent")
     shutil.copy(get_torrent_path("no_source"), "/tmp/input/no_source.torrent")
     shutil.copy(get_torrent_path("broken"), "/tmp/input/broken.torrent")
 
@@ -110,17 +143,13 @@ class TestScanTorrentDirectory(SetupTeardown):
       print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
       captured = capsys.readouterr()
 
-      assert "Analyzed 4 local torrents" in captured.out
+      assert "Analyzed 3 local torrents" in captured.out
 
-      assert (
-        f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/foo [OPS].torrent'.{Fore.RESET}"
-        in captured.out
-      )
       assert (
         f"{Fore.LIGHTGREEN_EX}Found with source 'RED' and generated as '/tmp/output/foo [RED].torrent'.{Fore.RESET}"
         in captured.out
       )
-      assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 2" in captured.out
+      assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
 
       assert (
         f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
