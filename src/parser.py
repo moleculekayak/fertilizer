@@ -6,7 +6,6 @@ from hashlib import sha1
 from .trackers import RedTracker, OpsTracker
 
 
-# TODO: test
 def is_valid_infohash(infohash: str) -> bool:
   if not isinstance(infohash, str) or len(infohash) != 40:
     return False
