@@ -12,7 +12,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Build Artifacts
-        run: zip fertilizer.zip src/**/*.py src/settings.json main.py requirements.txt
+        run: zip -r fertilizer.zip src main.py requirements.txt
       - name: Release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/')
