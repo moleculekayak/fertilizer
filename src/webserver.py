@@ -2,7 +2,7 @@ import os
 from flask import Flask, request
 
 from src.parser import is_valid_infohash
-from src.torrent import generate_new_torrent_from_file
+from src.scanner import scan_torrent_file
 from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 
 app = Flask(__name__)
@@ -24,7 +24,7 @@ def webhook():
     return http_error(f"No torrent found at {filepath}", 404)
 
   try:
-    _, new_filepath = generate_new_torrent_from_file(
+    new_filepath = scan_torrent_file(
       filepath,
       config["output_dir"],
       config["red_api"],

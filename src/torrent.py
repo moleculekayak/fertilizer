@@ -5,7 +5,12 @@ from html import unescape
 from .api import RedAPI, OpsAPI
 from .trackers import RedTracker, OpsTracker
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
-from .parser import get_torrent_data, get_origin_tracker, recalculate_hash_for_new_source, save_torrent_data
+from .parser import (
+  get_torrent_data,
+  get_origin_tracker,
+  recalculate_hash_for_new_source,
+  save_torrent_data,
+)
 
 
 def generate_new_torrent_from_file(
@@ -13,6 +18,8 @@ def generate_new_torrent_from_file(
   output_directory: str,
   red_api: RedAPI,
   ops_api: OpsAPI,
+  input_infohashes: dict = {},
+  output_infohashes: dict = {},
 ) -> tuple[OpsTracker | RedTracker, str]:
   """
   Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
@@ -22,13 +29,15 @@ def generate_new_torrent_from_file(
     `output_directory` (`str`): The directory to save the new torrent file.
     `red_api` (`RedApi`): The pre-configured API object for RED.
     `ops_api` (`OpsApi`): The pre-configured API object for OPS.
+    `input_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the input directory for caching purposes. Defaults to an empty dictionary.
+    `output_infohashes` (`dict`, optional): A dictionary of infohashes and their filenames from the output directory for caching purposes. Defaults to an empty dictionary.
   Returns:
     A tuple containing the new tracker class (`RedTracker` or `OpsTracker`) and the path to the new torrent file.
   Raises:
     `TorrentDecodingError`: if the original torrent file could not be decoded.
     `UnknownTrackerError`: if the original torrent file is not from OPS or RED.
     `TorrentNotFoundError`: if the original torrent file could not be found on the reciprocal tracker.
-    `TorrentAlreadyExistsError`: if the new torrent file already exists in the output directory.
+    `TorrentAlreadyExistsError`: if the new torrent file already exists in the input or output directory.
     `Exception`: if an unknown error occurs.
   """
 
@@ -39,6 +48,12 @@ def generate_new_torrent_from_file(
 
   for new_source in new_tracker.source_flags_for_creation():
     new_hash = recalculate_hash_for_new_source(old_torrent_data, new_source)
+
+    if new_hash in input_infohashes:
+      raise TorrentAlreadyExistsError(f"Torrent already exists in input directory as {input_infohashes[new_hash]}")
+    if new_hash in output_infohashes:
+      raise TorrentAlreadyExistsError(f"Torrent already exists in output directory as {output_infohashes[new_hash]}")
+
     api_response = new_tracker_api.find_torrent(new_hash)
 
     if api_response["status"] == "success":
@@ -49,11 +64,11 @@ def generate_new_torrent_from_file(
       )
 
       if new_torrent_filepath:
-        torrent_id = get_torrent_id(api_response)
+        torrent_id = __get_torrent_id(api_response)
 
         new_torrent_data[b"info"][b"source"] = new_source  # This is already bytes rather than str
         new_torrent_data[b"announce"] = new_tracker_api.announce_url.encode()
-        new_torrent_data[b"comment"] = generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
+        new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
 
         return (new_tracker, save_torrent_data(new_torrent_filepath, new_torrent_data))
     elif api_response["error"] in ("bad hash parameter", "bad parameters"):
@@ -86,30 +101,11 @@ def generate_torrent_output_filepath(api_response: dict, new_source: str, output
   return torrent_filepath
 
 
-def get_torrent_id(api_response: dict) -> str:
-  """
-  Extracts the torrent ID from the API response.
-
-  Args:
-    `api_response` (`dict`): The response from the tracker API.
-  Returns:
-    The torrent ID.
-  """
-
+def __get_torrent_id(api_response: dict) -> str:
   return api_response["response"]["torrent"]["id"]
 
 
-def generate_torrent_url(site_url: str, torrent_id: str) -> str:
-  """
-  Generates the URL to the torrent on the tracker.
-
-  Args:
-    `site_url` (`str`): The base URL of the tracker.
-    `torrent_id` (`str`): The ID of the torrent.
-  Returns:
-    The URL to the torrent.
-  """
-
+def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
   return f"{site_url}/torrents.php?torrentid={torrent_id}"
 
 
