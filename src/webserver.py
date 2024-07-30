@@ -40,6 +40,11 @@ def webhook():
     return http_error(str(e), 500)
 
 
+@app.errorhandler(404)
+def page_not_found(_e):
+  return http_error("Not found", 404)
+
+
 def http_success(message, code):
   return {"status": "success", "message": message}, code
 

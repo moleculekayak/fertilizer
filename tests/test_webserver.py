@@ -33,6 +33,13 @@ def infohash():
   return "0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33"
 
 
+class TestWebserverNotFound(SetupTeardown):
+  def test_returns_not_found(self, client):
+    response = client.get("/api/does-not-exist")
+    assert response.status_code == 404
+    assert response.json == {"status": "error", "message": "Not found"}
+
+
 class TestWebserverWebhook(SetupTeardown):
   def test_requires_infohash_parameter(self, client):
     response = client.post("/api/webhook", data={})
