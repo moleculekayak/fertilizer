@@ -5,7 +5,8 @@ from src.args import parse_args
 from src.config import Config
 from src.scanner import scan_torrent_directory
 
-if __name__ == "__main__":
+
+def cli_entrypoint():
   args = parse_args()
   config = Config().load(args.config_file)
 
@@ -17,4 +18,12 @@ if __name__ == "__main__":
     scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
   except FileNotFoundError as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
+    exit(1)
+
+
+if __name__ == "__main__":
+  try:
+    cli_entrypoint()
+  except KeyboardInterrupt:
+    print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)
