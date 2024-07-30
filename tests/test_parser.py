@@ -4,6 +4,7 @@ from .support import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
+  is_valid_infohash,
   get_source,
   get_torrent_data,
   get_announce_url,
@@ -11,6 +12,17 @@ from src.parser import (
   recalculate_hash_for_new_source,
   save_torrent_data,
 )
+
+
+class TestParserIsValidInfohash(SetupTeardown):
+  def test_returns_true_for_valid_infohash(self):
+    assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
+
+  def test_returns_false_for_invalid_infohash(self):
+    assert not is_valid_infohash("abc")
+    assert not is_valid_infohash("mnopqrstuvwx")
+    assert not is_valid_infohash("Ubeec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
+    assert not is_valid_infohash(123)
 
 
 class TestParserGetSource(SetupTeardown):
