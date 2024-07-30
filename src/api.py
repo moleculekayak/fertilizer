@@ -102,6 +102,8 @@ class OpsAPI(GazelleAPI):
       rate_limit=delay_in_seconds,
     )
 
+    self.sitename = "OPS"
+
 
 class RedAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):
@@ -111,3 +113,5 @@ class RedAPI(GazelleAPI):
       auth_header={"Authorization": api_key},
       rate_limit=delay_in_seconds,
     )
+
+    self.sitename = "RED"
