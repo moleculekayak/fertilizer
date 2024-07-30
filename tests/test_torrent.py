@@ -17,11 +17,6 @@ from src.torrent import (
 
 
 class TestGenerateNewTorrentFromFile(SetupTeardown):
-  TORRENT_SUCCESS_RESPONSE = {"status": "success", "response": {"torrent": {"filePath": "foo", "id": 123}}}
-  TORRENT_KNOWN_BAD_RESPONSE = {"status": "failure", "error": "bad hash parameter"}
-  TORRENT_UNKNOWN_BAD_RESPONSE = {"status": "failure", "error": "unknown error"}
-  ANNOUNCE_SUCCESS_RESPONSE = {"status": "success", "response": {"passkey": "bar"}}
-
   def test_saves_new_torrent_from_red_to_ops(self, red_api, ops_api):
     with requests_mock.Mocker() as m:
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)

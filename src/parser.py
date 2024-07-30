@@ -1,8 +1,17 @@
-import bencoder
 import copy
+import bencoder
 from hashlib import sha1
 
 from .trackers import RedTracker, OpsTracker
+
+
+def is_valid_infohash(infohash: str) -> bool:
+  if not isinstance(infohash, str) or len(infohash) != 40:
+    return False
+  try:
+    return bool(int(infohash, 16))
+  except ValueError:
+    return False
 
 
 def get_source(torrent_data: dict) -> bytes:

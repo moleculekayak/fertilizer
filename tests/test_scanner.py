@@ -11,18 +11,6 @@ from src.scanner import scan_torrent_directory
 
 
 class TestScanTorrentDirectory(SetupTeardown):
-  TORRENT_SUCCESS_RESPONSE = {"status": "success", "response": {"torrent": {"filePath": "foo", "id": 123}}}
-  TORRENT_KNOWN_BAD_RESPONSE = {"status": "failure", "error": "bad hash parameter"}
-  TORRENT_UNKNOWN_BAD_RESPONSE = {"status": "failure", "error": "unknown error"}
-  ANNOUNCE_SUCCESS_RESPONSE = {"status": "success", "response": {"passkey": "bar"}}
-
-  def setup_method(self):
-    super().setup_method()
-    shutil.rmtree("/tmp/input", ignore_errors=True)
-    shutil.rmtree("/tmp/output", ignore_errors=True)
-    os.makedirs("/tmp/input")
-    os.makedirs("/tmp/output")
-
   def test_gets_mad_if_input_directory_does_not_exist(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
       scan_torrent_directory("/tmp/nonexistent", "/tmp/output", red_api, ops_api)
