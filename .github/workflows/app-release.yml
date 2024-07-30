@@ -1,0 +1,24 @@
+name: App Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build Artifacts
+        run: zip fertilizer.zip src/**/*.py src/settings.json main.py requirements.txt
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          fail_on_unmatched_files: true
+          draft: true
+          generate_release_notes: true
+          files: |
+            fertilizer.zip
