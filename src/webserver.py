@@ -58,4 +58,4 @@ def run_webserver(input_dir, output_dir, red_api, ops_api, host="0.0.0.0", port=
     }
   )
 
-  app.run(debug=True, host=host, port=port)
+  app.run(debug=False, host=host, port=port)

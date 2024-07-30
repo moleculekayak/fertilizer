@@ -1,3 +1,4 @@
+import os
 from colorama import Fore
 
 from src.api import RedAPI, OpsAPI
@@ -19,7 +20,7 @@ def cli_entrypoint():
 
   try:
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api)
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
     elif args.input_file:
       _, torrent_path = generate_new_torrent_from_file(args.input_file, args.output_directory, red_api, ops_api)
       print(torrent_path)
