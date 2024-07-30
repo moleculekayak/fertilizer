@@ -5,6 +5,8 @@ services:
       dockerfile: ./Dockerfile
     volumes:
       - '.:/app'
+    ports:
+      - '9713:9713'
     entrypoint: /bin/bash
     command: 
       - -c

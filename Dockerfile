@@ -17,4 +17,6 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
+EXPOSE 9713
+
 ENTRYPOINT ["./docker_start"]
