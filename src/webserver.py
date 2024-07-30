@@ -7,8 +7,6 @@ from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 
 app = Flask(__name__)
 
-# TODO: hook up args for server mode
-
 
 @app.route("/api/webhook", methods=["POST"])
 def webhook():

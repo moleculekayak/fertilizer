@@ -41,6 +41,16 @@ class TestArgs(SetupTeardown):
     assert excinfo.value.code == 2
     assert "argument -f/--input-file: not allowed with argument -i/--input-directory" in captured.err
 
+  def test_server_requires_input_directory(self, capsys):
+    with pytest.raises(SystemExit) as excinfo:
+      parse_args(["-s", "-o", "foo", "-f", "bar"])
+
+    captured = capsys.readouterr()
+
+    assert excinfo.value.code == 2
+    print(captured.err)
+    assert "--server requires --input-directory" in captured.err
+
   def test_requires_output_directory(self, capsys):
     with pytest.raises(SystemExit) as excinfo:
       parse_args(["-i", "foo"])

@@ -16,6 +16,7 @@ def parse_args(args=None):
   support = parser.add_argument_group(title="support")
   directories = parser.add_argument_group(title="directories")
   inputs = directories.add_mutually_exclusive_group(required=True)
+  options = parser.add_argument_group(title="options")
   config = parser.add_argument_group(title="config")
 
   support.add_argument(
@@ -46,6 +47,14 @@ def parse_args(args=None):
     help="directory where cross-seedable .torrent files will be saved",
   )
 
+  options.add_argument(
+    "-s",
+    "--server",
+    action="store_true",
+    help="starts fertizer in server mode. Requires -i/--input-directory",
+    default=False,
+  )
+
   config.add_argument(
     "-c",
     "--config-file",
@@ -54,4 +63,9 @@ def parse_args(args=None):
     default="src/settings.json",
   )
 
-  return parser.parse_args(args)
+  parsed = parser.parse_args(args)
+
+  if parsed.server and not parsed.input_directory:
+    parser.error("--server requires --input-directory")
+
+  return parsed

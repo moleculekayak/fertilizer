@@ -18,13 +18,14 @@ def cli_entrypoint():
   ops_api = OpsAPI(config.ops_key)
 
   try:
-    run_webserver(args.output_directory, red_api, ops_api)
-    # if args.input_file:
-    #   _, torrent_path = generate_new_torrent_from_file(args.input_file, args.output_directory, red_api, ops_api)
-    #   print(torrent_path)
-    # elif args.input_directory:
-    #   report = scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
-    #   print(report)
+    if args.server:
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api)
+    elif args.input_file:
+      _, torrent_path = generate_new_torrent_from_file(args.input_file, args.output_directory, red_api, ops_api)
+      print(torrent_path)
+    elif args.input_directory:
+      report = scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
+      print(report)
   except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
