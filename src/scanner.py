@@ -7,42 +7,12 @@ from .torrent import generate_new_torrent_from_file
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 
 
-# def scan_torrent(
-#   torrent_path: str,
-#   output_directory: str,
-#   red_api: RedAPI,
-#   ops_api: OpsAPI,
-# ) -> str:
-#   """
-#   Takes a single .torrent file and generates a new one using the tracker APIs.
-
-#   Args:
-#     `torrent_path` (`str`): The path to the .torrent file.
-#     `output_directory` (`str`): The directory to save the new .torrent files.
-#     `red_api` (`RedAPI`): The pre-configured RED tracker API.
-#     `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
-#   Returns:
-#     `str`: The path to the new .torrent file.
-#   Raises:
-#     TorrentDecodingError | UnknownTrackerError | TorrentNotFoundError | TorrentAlreadyExistsError | Exception
-#   """
-
-#   _new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
-#     torrent_path,
-#     output_directory,
-#     red_api,
-#     ops_api,
-#   )
-
-#   return new_torrent_filepath
-
-
 def scan_torrent_directory(
   input_directory: str,
   output_directory: str,
   red_api: RedAPI,
   ops_api: OpsAPI,
-) -> None:
+) -> str:
   """
   Scans a directory for .torrent files and generates new ones using the tracker APIs.
 
@@ -52,7 +22,7 @@ def scan_torrent_directory(
     `red_api` (`RedAPI`): The pre-configured RED tracker API.
     `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
   Returns:
-    None
+    str: A report of the scan.
   Raises:
     `FileNotFoundError`: if the input directory does not exist.
   """
@@ -93,4 +63,4 @@ def scan_torrent_directory(
       p.error.print(str(e))
       continue
 
-  print(p.report())
+  return p.report()
