@@ -2,7 +2,6 @@
 
 if [ ! -f /config/settings.json ]; then
   cp /app/src/settings.json /config/settings.json
-  rm /app/src/settings.json
 fi
 
 $@
