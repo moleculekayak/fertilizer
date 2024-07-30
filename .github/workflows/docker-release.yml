@@ -22,7 +22,7 @@ on:
       - master
   release:
     types:
-      - released
+      - published
 
 jobs:
   build_and_push_docker:
