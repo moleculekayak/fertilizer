@@ -1,6 +1,7 @@
 import os
 from flask import Flask, request
 
+from src.parser import is_valid_infohash
 from src.torrent import generate_new_torrent_from_file
 from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 
@@ -11,20 +12,20 @@ app = Flask(__name__)
 
 @app.route("/api/webhook", methods=["POST"])
 def webhook():
+  config = app.config
   request_form = request.form.to_dict()
-  filepath = request_form.get("path")
+  infohash = request_form.get("infohash")
+  # NOTE: always ensure safety checks are done before this filepath is ever used
+  filepath = f"{config['input_dir']}/{infohash}.torrent"
 
-  if filepath is None:
-    return http_error("Request must include a 'path' parameter", 400)
-
-  if not filepath.endswith(".torrent"):
-    return http_error("'path' must point to a .torrent file", 400)
-
+  if infohash is None:
+    return http_error("Request must include an 'infohash' parameter", 400)
+  if not is_valid_infohash(infohash):
+    return http_error("Invalid infohash", 400)
   if not os.path.exists(filepath):
     return http_error(f"No torrent found at {filepath}", 404)
 
   try:
-    config = app.config
     _, new_filepath = generate_new_torrent_from_file(
       filepath,
       config["output_dir"],
@@ -49,9 +50,10 @@ def http_error(message, code):
   return {"status": "error", "message": message}, code
 
 
-def run_webserver(output_dir, red_api, ops_api, host="0.0.0.0", port=9713):
+def run_webserver(input_dir, output_dir, red_api, ops_api, host="0.0.0.0", port=9713):
   app.config.update(
     {
+      "input_dir": input_dir,
       "output_dir": output_dir,
       "red_api": red_api,
       "ops_api": ops_api,
