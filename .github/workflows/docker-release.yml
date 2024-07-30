@@ -20,9 +20,9 @@ on:
   push:
     branches:
       - master
-  # release:
-  #   types:
-  #     - published
+  release:
+    types:
+      - published
 
 jobs:
   build_and_push_docker:
@@ -48,8 +48,9 @@ jobs:
             type=ref,event=tag
             type=raw,value=dev,enable=${{ github.event_name != 'release' && github.event_name != 'workflow_dispatch' }}
             type=raw,value=${{ inputs.docker_tags }},enable=${{ github.event_name == 'workflow_dispatch' }}
+          # TODO: change to auto once I'm happy with the setup
           flavor: |
-            latest=auto
+            latest=false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
