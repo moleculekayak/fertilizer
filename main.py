@@ -9,8 +9,7 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 from src.webserver import run_webserver
 
 
-def cli_entrypoint():
-  args = parse_args()
+def cli_entrypoint(args):
   config = Config().load(args.config_file)
 
   # TODO: confirm that both trackers can be accessed before starting the scan
@@ -30,8 +29,10 @@ def cli_entrypoint():
 
 
 if __name__ == "__main__":
+  args = parse_args()
+
   try:
-    cli_entrypoint()
+    cli_entrypoint(args)
   except KeyboardInterrupt:
     print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)
