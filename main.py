@@ -3,6 +3,7 @@ from colorama import Fore
 from src.api import RedAPI, OpsAPI
 from src.args import parse_args
 from src.config import Config
+from src.torrent import generate_new_torrent_from_file
 from src.scanner import scan_torrent_directory
 
 
@@ -15,8 +16,13 @@ def cli_entrypoint():
   ops_api = OpsAPI(config.ops_key)
 
   try:
-    scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
-  except FileNotFoundError as e:
+    if args.input_file:
+      _, torrent_path = generate_new_torrent_from_file(args.input_file, args.output_directory, red_api, ops_api)
+      print(torrent_path)
+    elif args.input_directory:
+      report = scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
+      print(report)
+  except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
 
