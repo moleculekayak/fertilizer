@@ -10,10 +10,10 @@ from src.webserver import run_webserver
 
 
 def cli_entrypoint(args):
-  config = Config().load(args.config_file)
-  red_api, ops_api = __verify_api_keys(config)
-
   try:
+    config = Config().load(args.config_file)
+    red_api, ops_api = __verify_api_keys(config)
+
     if args.server:
       run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
     elif args.input_file:
