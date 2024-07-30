@@ -1,4 +1,3 @@
-import re
 import copy
 import bencoder
 from hashlib import sha1
