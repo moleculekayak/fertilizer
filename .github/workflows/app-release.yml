@@ -20,5 +20,6 @@ jobs:
           fail_on_unmatched_files: true
           draft: false
           generate_release_notes: true
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           files: |
             fertilizer.zip
