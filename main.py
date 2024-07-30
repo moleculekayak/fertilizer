@@ -4,8 +4,7 @@ from colorama import Fore
 from src.api import RedAPI, OpsAPI
 from src.args import parse_args
 from src.config import Config
-from src.torrent import generate_new_torrent_from_file
-from src.scanner import scan_torrent_directory
+from src.scanner import scan_torrent_directory, scan_torrent_file
 
 from src.webserver import run_webserver
 
@@ -22,11 +21,9 @@ def cli_entrypoint():
     if args.server:
       run_webserver(args.input_directory, args.output_directory, red_api, ops_api, port=os.environ.get("PORT", 9713))
     elif args.input_file:
-      _, torrent_path = generate_new_torrent_from_file(args.input_file, args.output_directory, red_api, ops_api)
-      print(torrent_path)
+      print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api))
     elif args.input_directory:
-      report = scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api)
-      print(report)
+      print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api))
   except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)

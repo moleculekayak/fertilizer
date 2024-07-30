@@ -8,6 +8,43 @@ from .parser import get_torrent_data, calculate_infohash
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 
 
+def scan_torrent_file(
+  torrent_path: str,
+  output_directory: str,
+  red_api: RedAPI,
+  ops_api: OpsAPI,
+) -> str:
+  """
+  Scans a single .torrent file and generates a new one using the tracker API.
+
+  Args:
+    `torrent_path` (`str`): The path to the .torrent file.
+    `output_directory` (`str`): The directory to save the new .torrent files.
+    `red_api` (`RedAPI`): The pre-configured RED tracker API.
+    `ops_api` (`OpsAPI`): The pre-configured OPS tracker API.
+  Returns:
+    str: The path to the new .torrent file.
+  Raises:
+    See `generate_new_torrent_from_file`.
+  """
+  torrent_path = assert_path_exists(torrent_path)
+  output_directory = mkdir_p(output_directory)
+
+  output_torrents = list_files_of_extension(output_directory, ".torrent")
+  output_infohashes = __collect_infohashes_from_files(output_torrents)
+
+  _new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
+    torrent_path,
+    output_directory,
+    red_api,
+    ops_api,
+    input_infohashes={},
+    output_infohashes=output_infohashes,
+  )
+
+  return new_torrent_filepath
+
+
 def scan_torrent_directory(
   input_directory: str,
   output_directory: str,
