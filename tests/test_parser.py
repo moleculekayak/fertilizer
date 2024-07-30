@@ -11,10 +11,11 @@ from src.parser import (
   get_origin_tracker,
   recalculate_hash_for_new_source,
   save_torrent_data,
+  calculate_infohash,
 )
 
 
-class TestParserIsValidInfohash(SetupTeardown):
+class TestIsValidInfohash(SetupTeardown):
   def test_returns_true_for_valid_infohash(self):
     assert is_valid_infohash("0beec7b5ea3f0fdbc95d0dd47f3c5bc275da8a33")
 
@@ -25,7 +26,7 @@ class TestParserIsValidInfohash(SetupTeardown):
     assert not is_valid_infohash(123)
 
 
-class TestParserGetSource(SetupTeardown):
+class TestGetSource(SetupTeardown):
   def test_returns_source_if_present(self):
     assert get_source({b"info": {b"source": b"FOO"}}) == b"FOO"
 
@@ -33,7 +34,7 @@ class TestParserGetSource(SetupTeardown):
     assert get_source({}) is None
 
 
-class TestParserGetAnnounceUrl(SetupTeardown):
+class TestGetAnnounceUrl(SetupTeardown):
   def test_returns_url_if_present(self):
     assert get_announce_url({b"announce": b"https://foo.bar"}) == b"https://foo.bar"
 
@@ -41,7 +42,7 @@ class TestParserGetAnnounceUrl(SetupTeardown):
     assert get_announce_url({}) is None
 
 
-class TestParserGetOriginTracker(SetupTeardown):
+class TestGetOriginTracker(SetupTeardown):
   def test_returns_red_based_on_source(self):
     assert get_origin_tracker({b"info": {b"source": b"RED"}}) == RedTracker
     assert get_origin_tracker({b"info": {b"source": b"PTH"}}) == RedTracker
@@ -61,7 +62,15 @@ class TestParserGetOriginTracker(SetupTeardown):
     assert get_origin_tracker({b"announce": b"https://foo/123abc"}) is None
 
 
-class TestParserReplaceSourceAndReturnHash(SetupTeardown):
+class TestCalculateInfohash(SetupTeardown):
+  def test_returns_infohash(self):
+    torrent_data = {b"info": {b"source": b"RED"}}
+    result = calculate_infohash(torrent_data)
+
+    assert result == "FD2F1D966DF7E2E35B0CF56BC8510C6BB4D44467"
+
+
+class TestRecalculateHashForNewSource(SetupTeardown):
   def test_replaces_source_and_returns_hash(self):
     torrent_data = {b"info": {b"source": b"RED"}}
     new_source = b"OPS"
@@ -79,7 +88,7 @@ class TestParserReplaceSourceAndReturnHash(SetupTeardown):
     assert torrent_data == {b"info": {b"source": b"RED"}}
 
 
-class TestParserGetTorrentData(SetupTeardown):
+class TestGetTorrentData(SetupTeardown):
   def test_returns_torrent_data(self):
     result = get_torrent_data(get_torrent_path("no_source"))
 
@@ -92,7 +101,7 @@ class TestParserGetTorrentData(SetupTeardown):
     assert result is None
 
 
-class TestParserSaveTorrentData(SetupTeardown):
+class TestSaveTorrentData(SetupTeardown):
   def test_saves_torrent_data(self):
     torrent_data = {b"info": {b"source": b"RED"}}
     filename = "/tmp/test_save_torrent_data.torrent"

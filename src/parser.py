@@ -41,14 +41,15 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   return None
 
 
+def calculate_infohash(torrent_data: dict) -> str:
+  return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
+
+
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
   torrent_data = copy.deepcopy(torrent_data)
-  new_source = new_source.encode() if isinstance(new_source, str) else new_source
-
   torrent_data[b"info"][b"source"] = new_source
-  hash = sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
 
-  return hash
+  return calculate_infohash(torrent_data)
 
 
 def get_torrent_data(filename: str) -> dict:
