@@ -15,6 +15,7 @@ def parse_args(args=None):
 
   support = parser.add_argument_group(title="support")
   directories = parser.add_argument_group(title="directories")
+  inputs = directories.add_mutually_exclusive_group(required=True)
   config = parser.add_argument_group(title="config")
 
   support.add_argument(
@@ -25,19 +26,24 @@ def parse_args(args=None):
     help="show this help message and exit",
   )
 
-  directories.add_argument(
+  inputs.add_argument(
     "-i",
     "--input-directory",
     type=str,
-    required=True,
-    help="folder with the .torrent files to check",
+    help="directory with the .torrent files to check",
+  )
+  inputs.add_argument(
+    "-f",
+    "--input-file",
+    type=str,
+    help="filepath of the single .torrent file to check",
   )
   directories.add_argument(
     "-o",
     "--output-directory",
     type=str,
     required=True,
-    help="folder where cross-seedable .torrent files will be saved",
+    help="directory where cross-seedable .torrent files will be saved",
   )
 
   config.add_argument(
