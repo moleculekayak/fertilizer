@@ -58,7 +58,7 @@ class Deluge(TorrentClient):
       "save_path": torrent["save_path"],
     }
 
-  def inject_torrent(self, old_torrent_infohash, new_torrent_filepath):
+  def inject_torrent(self, old_torrent_infohash, new_torrent_filepath, save_path_override=None):
     old_torrent_info = self.get_torrent_info(old_torrent_infohash)
 
     if not old_torrent_info["complete"]:
@@ -69,7 +69,7 @@ class Deluge(TorrentClient):
       base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
       {
         # TODO: in future, we should hardlink the data instead of sharing the same path
-        "download_location": old_torrent_info["save_path"],
+        "download_location": save_path_override if save_path_override else old_torrent_info["save_path"],
         "seed_mode": True,
         "add_paused": False,
       },

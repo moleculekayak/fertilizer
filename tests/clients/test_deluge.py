@@ -24,7 +24,7 @@ def torrent_info_response():
     "name": "foo.torrent",
     "state": "Seeding",
     "progress": 100.0,
-    "save_path": "/tmp/foo.torrent",
+    "save_path": "/tmp/bar/",
     "label": "fertilizer",
     "total_remaining": 0.0,
   }
@@ -111,7 +111,7 @@ class TestGetTorrentInfo(SetupTeardown):
       assert response == {
         "complete": True,
         "label": "fertilizer",
-        "save_path": "/tmp/foo.torrent",
+        "save_path": "/tmp/bar/",
       }
 
   def test_raises_if_no_torrents_returned(self, api_url, deluge_client):
@@ -206,7 +206,32 @@ class TestInjectTorrent(SetupTeardown):
       assert response == "abc123"
       assert request_params[0] == "red_source.fertilizer.torrent"
       assert request_params[1] == base64.b64encode(open(torrent_path, "rb").read()).decode()
-      assert request_params[2] == {"download_location": "/tmp/foo.torrent", "seed_mode": True, "add_paused": False}
+      assert request_params[2] == {"download_location": "/tmp/bar/", "seed_mode": True, "add_paused": False}
+
+  def test_uses_save_path_override_if_present(self, api_url, deluge_client, torrent_info_response):
+    torrent_path = get_torrent_path("red_source")
+
+    with requests_mock.Mocker() as m:
+      m.post(
+        api_url,
+        additional_matcher=torrent_info_matcher,
+        json={
+          "result": {
+            "torrents": {"foo": torrent_info_response},
+          },
+        },
+      )
+
+      m.post(
+        api_url,
+        additional_matcher=add_torrent_matcher,
+        json={"result": "abc123"},
+      )
+
+      response = deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
+      request_params = m.request_history[1].json()["params"]
+
+      assert request_params[2] == {"download_location": "/tmp/override/", "seed_mode": True, "add_paused": False}
 
   def test_raises_if_torrent_not_complete(self, api_url, deluge_client, torrent_info_response):
     torrent_info_response["state"] = "Paused"
