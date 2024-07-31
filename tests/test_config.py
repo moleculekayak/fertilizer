@@ -9,7 +9,7 @@ from src.errors import ConfigKeyError
 
 class TestConfig(SetupTeardown):
   def test_loads_config(self):
-    config = Config().load("tests/support/settings.json")
+    config = Config().load("tests/support/config.json")
 
     assert config.red_key == "red_key"
     assert config.ops_key == "ops_key"

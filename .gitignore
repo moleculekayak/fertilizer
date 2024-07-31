@@ -132,6 +132,9 @@ cython_debug/
 .vscode/
 
 .env
-tests/support/torrents/example.torrent
 scratchpad.md
 .DS_Store
+
+*.torrent
+!tests/support/torrents/*.torrent
+tests/support/torrents/example.torrent

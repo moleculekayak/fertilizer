@@ -2,6 +2,9 @@ from urllib.parse import urlparse, unquote
 
 
 class TorrentClient:
+  def __init__(self):
+    self.torrent_label = "fertilizer"
+
   def _extract_credentials_from_url(self, url):
     parsed_url = urlparse(url)
     username = unquote(parsed_url.username) if parsed_url.username else ""

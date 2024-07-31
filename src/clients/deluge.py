@@ -1,5 +1,8 @@
+import os
 import json
+import base64
 import requests
+from pathlib import Path
 
 from ..errors import TorrentClientError
 from .torrent_client import TorrentClient
@@ -9,6 +12,7 @@ from requests.structures import CaseInsensitiveDict
 
 class Deluge(TorrentClient):
   def __init__(self, rpc_url):
+    super().__init__()
     self._rpc_url = rpc_url
     self._deluge_cookie = None
     self._deluge_request_id = 0
@@ -49,7 +53,7 @@ class Deluge(TorrentClient):
       torrent = response['torrents'].get(infohash)
 
       if torrent is None:
-        raise ValueError(f"Torrent not found in client ({infohash})")
+        raise TorrentClientError(f"Torrent not found in client ({infohash})")
     else:
       raise TorrentClientError("Client returned unexpected response (object missing)")
 
@@ -66,10 +70,52 @@ class Deluge(TorrentClient):
       'save_path': torrent['save_path'],
     }
   
+  def inject_torrent(self, old_torrent_infohash, new_torrent_filepath):
+    old_torrent_info = self.get_torrent_info(old_torrent_infohash)
+
+    if not old_torrent_info['complete']:
+      raise TorrentClientError("Cannot inject a torrent that is not complete")
+    
+    params = [
+      f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
+      base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
+      {
+        # TODO: in future, we should hardlink the data instead of sharing the same path
+        "download_location": old_torrent_info['save_path'],
+        "seed_mode": True,
+        "add_paused": False,
+      },
+    ]
+
+    new_torrent_infohash = self.__request("core.add_torrent_file", params)
+    newtorrent_label = self.__determine_label(old_torrent_info)
+    self.__set_label(new_torrent_infohash, newtorrent_label)
+
+    return new_torrent_infohash
+
   def __is_label_plugin_enabled(self):
     response = self.__request("core.get_enabled_plugins")
 
     return "Label" in response
+
+  def __determine_label(self, torrent_info):
+    current_label = torrent_info.get("label")
+    
+    if not current_label or current_label == self.torrent_label:
+      return self.torrent_label
+    
+    return f"{current_label}.{self.torrent_label}"
+  
+  def __set_label(self, infohash, label):
+    if not self._label_plugin_enabled:
+      return
+    
+    current_labels = self.__request("label.get_labels")
+
+    if label not in current_labels:
+      self.__request("label.add", [label])
+
+    return self.__request("label.set_torrent", [infohash, label])
 
   def __request(self, method, params=[]):
     href, _, _ = self._extract_credentials_from_url(self._rpc_url)

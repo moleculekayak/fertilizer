@@ -1,7 +1,7 @@
 #!/bin/sh
 
-if [ ! -f /config/settings.json ]; then
-  cp /app/src/settings.json /config/settings.json
+if [ ! -f /config/config.json ]; then
+  cp /app/src/config.json /config/config.json
 fi
 
 $@
