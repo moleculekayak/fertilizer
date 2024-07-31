@@ -60,7 +60,7 @@ def parse_args(args=None):
     "--config-file",
     type=str,
     help="path to a configuration file",
-    default="src/settings.json",
+    default="src/config.json",
   )
 
   parsed = parser.parse_args(args)
