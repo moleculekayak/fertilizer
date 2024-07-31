@@ -42,7 +42,7 @@ def __verify_api_keys(config):
 if __name__ == "__main__":
   deluge = Deluge(os.environ.get("DELUGE_RPC_URL"))
   deluge.setup()
-  deluge.inject_torrent(os.environ.get("TORRENT_HASH"), 'foo.torrent')
+  deluge.inject_torrent(os.environ.get("TORRENT_HASH"), "foo.torrent")
 
   # print(res)
   # args = parse_args()
