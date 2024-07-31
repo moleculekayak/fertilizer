@@ -1,4 +1,4 @@
 {
-  "RED": "red_key",
-  "OPS": "ops_key"
+  "red_key": "red_key",
+  "ops_key": "ops_key"
 }

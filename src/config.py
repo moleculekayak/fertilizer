@@ -23,11 +23,11 @@ class Config:
 
   @property
   def red_key(self) -> str:
-    return self.__get_key("RED")
+    return self.__get_key("red_key")
 
   @property
   def ops_key(self) -> str:
-    return self.__get_key("OPS")
+    return self.__get_key("ops_key")
 
   def __get_key(self, key):
     try:

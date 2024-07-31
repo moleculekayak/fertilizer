@@ -8,8 +8,8 @@ from src.api import RedAPI, OpsAPI
 def mock_config():
   instance = Config()
   instance._json = {
-    "RED": "secret_red",
-    "OPS": "secret_ops",
+    "red_key": "secret_red",
+    "ops_key": "secret_ops",
   }
   return instance
 

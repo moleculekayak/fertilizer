@@ -29,5 +29,5 @@ class TestConfig(SetupTeardown):
     with pytest.raises(ConfigKeyError) as excinfo:
       config.red_key
 
-    assert "Key 'RED' not found in config file." in str(excinfo.value)
+    assert "Key 'red_key' not found in config file." in str(excinfo.value)
     os.remove("/tmp/empty.json")
