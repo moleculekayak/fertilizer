@@ -12,7 +12,7 @@ RUN apt-get update \
   && echo "#!/bin/bash\npython3 /app/main.py \$@" >/bin/fertilizer \
   && chmod +x /bin/fertilizer \
   && echo "----- Preparing directories" \
-  && mkdir /config /output \
+  && mkdir /config /data /torrents \
   && echo "----- Cleanup" \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
