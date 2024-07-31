@@ -7,6 +7,9 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 
 from src.webserver import run_webserver
 
+import os
+from src.clients.deluge import Deluge
+
 
 def cli_entrypoint(args):
   try:
@@ -37,10 +40,15 @@ def __verify_api_keys(config):
 
 
 if __name__ == "__main__":
-  args = parse_args()
+  deluge = Deluge(os.environ.get("DELUGE_RPC_URL"))
+  deluge.setup()
+  res = deluge.get_torrent_info()
 
-  try:
-    cli_entrypoint(args)
-  except KeyboardInterrupt:
-    print(f"{Fore.RED}Exiting...{Fore.RESET}")
-    exit(1)
+  print(res)
+  # args = parse_args()
+
+  # try:
+  #   cli_entrypoint(args)
+  # except KeyboardInterrupt:
+  #   print(f"{Fore.RED}Exiting...{Fore.RESET}")
+  #   exit(1)

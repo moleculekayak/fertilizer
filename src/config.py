@@ -33,6 +33,10 @@ class Config:
   def server_port(self) -> str:
     return self.__get_key("port", "9713")
 
+  @property
+  def injection_label(self) -> str:
+    return self.__get_key("injection_label", "fertilizer")
+
   def __get_key(self, key, default=None):
     try:
       return self._json[key]
