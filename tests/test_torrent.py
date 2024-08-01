@@ -3,7 +3,7 @@ import re
 import pytest
 import requests_mock
 
-from .support import get_torrent_path, SetupTeardown
+from .helpers import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker
 from src.parser import get_torrent_data

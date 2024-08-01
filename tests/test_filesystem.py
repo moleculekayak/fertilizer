@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from .support import SetupTeardown
+from .helpers import SetupTeardown
 
 from src.filesystem import mkdir_p, assert_path_exists, list_files_of_extension
 # from src.errors import ConfigKeyError
@@ -42,7 +42,7 @@ class TestAssertPathExists(SetupTeardown):
 
 class TestListFilesOfExtension(SetupTeardown):
   def test_lists_files_of_extension(self):
-    input_directory = "tests/support/torrents"
+    input_directory = "tests/support/files"
 
     files = list_files_of_extension(input_directory)
 

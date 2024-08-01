@@ -12,7 +12,7 @@ def cli_entrypoint(args):
   try:
     config = Config().load(args.config_file)
     red_api, ops_api = __verify_api_keys(config)
-    injector = Injection(config) if config.inject_torrents else None
+    injector = Injection(config).setup() if config.inject_torrents else None
 
     if args.server:
       run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)

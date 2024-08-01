@@ -45,7 +45,6 @@ def scan_torrent_file(
     output_infohashes=output_infohashes,
   )
 
-  # TODO: test
   if injector:
     injector.inject_torrent(
       source_torrent_path,
@@ -102,7 +101,6 @@ def scan_torrent_directory(
         output_infohashes,
       )
 
-      # TODO: test
       if injector:
         injector.inject_torrent(
           source_torrent_path,

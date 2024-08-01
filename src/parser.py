@@ -22,7 +22,6 @@ def get_source(torrent_data: dict) -> bytes:
     return None
 
 
-# TODO: test
 def get_name(torrent_data: dict) -> bytes:
   try:
     return torrent_data[b"info"][b"name"]

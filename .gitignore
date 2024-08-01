@@ -137,5 +137,5 @@ scratchpad.md
 tmp/
 
 *.torrent
-!tests/support/torrents/*.torrent
-tests/support/torrents/example.torrent
+!tests/support/files/*.torrent
+tests/support/files/example.torrent

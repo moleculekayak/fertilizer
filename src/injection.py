@@ -7,13 +7,15 @@ from .config import Config
 from .parser import calculate_infohash, get_name, get_torrent_data
 
 
-# TODO: test all
 class Injection:
   def __init__(self, config: Config):
     self.config = self.__validate_config(config)
     self.linking_directory = config.injection_link_directory
     self.client = self.__determine_torrent_client(config)
+
+  def setup(self):
     self.client.setup()
+    return self
 
   def inject_torrent(self, source_torrent_filepath, new_torrent_filepath, new_tracker):
     source_torrent_data = get_torrent_data(source_torrent_filepath)
@@ -23,7 +25,9 @@ class Injection:
     output_parent_directory = os.path.dirname(os.path.normpath(output_location))
 
     return self.client.inject_torrent(
-      calculate_infohash(source_torrent_data), new_torrent_filepath, save_path_override=output_parent_directory
+      calculate_infohash(source_torrent_data),
+      new_torrent_filepath,
+      save_path_override=output_parent_directory,
     )
 
   def __validate_config(self, config: Config):

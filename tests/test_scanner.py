@@ -3,9 +3,11 @@ import re
 import shutil
 import pytest
 import requests_mock
+
+from unittest.mock import MagicMock
 from colorama import Fore
 
-from .support import SetupTeardown, get_torrent_path, copy_and_mkdir
+from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
 from src.errors import TorrentAlreadyExistsError
 from src.scanner import scan_torrent_directory, scan_torrent_file
@@ -49,6 +51,21 @@ class TestScanTorrentFile(SetupTeardown):
       scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
 
     assert str(excinfo.value) == "Torrent already exists in output directory as Big Buck Bunny"
+
+  def test_calls_injector_if_provided(self, red_api, ops_api):
+    injector_mock = MagicMock()
+    injector_mock.inject_torrent = MagicMock()
+    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, injector_mock)
+
+    injector_mock.inject_torrent.assert_called_once_with(
+      "/tmp/input/red_source.torrent", "/tmp/output/OPS/foo [OPS].torrent", "OPS"
+    )
 
 
 class TestScanTorrentDirectory(SetupTeardown):
@@ -205,3 +222,18 @@ class TestScanTorrentDirectory(SetupTeardown):
       captured = capsys.readouterr()
 
       assert "Analyzed 0 local torrents" in captured.out
+
+  def test_calls_injector_if_provided(self, red_api, ops_api):
+    injector_mock = MagicMock()
+    injector_mock.inject_torrent = MagicMock()
+    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, injector_mock)
+
+    injector_mock.inject_torrent.assert_called_once_with(
+      "/tmp/input/red_source.torrent", "/tmp/output/OPS/foo [OPS].torrent", "OPS"
+    )

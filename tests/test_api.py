@@ -1,7 +1,7 @@
 import pytest
 import requests_mock
 
-from .support import SetupTeardown
+from .helpers import SetupTeardown
 
 from src.errors import AuthenticationError
 from src.api import GazelleAPI
