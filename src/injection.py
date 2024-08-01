@@ -20,9 +20,10 @@ class Injection:
     source_torrent_file_or_dir = self.__determine_torrent_data_location(source_torrent_data)
     output_location = self.__determine_output_location(source_torrent_file_or_dir, new_tracker)
     self.__link_files_to_output_location(source_torrent_file_or_dir, output_location)
+    output_parent_directory = os.path.dirname(os.path.normpath(output_location))
 
     return self.client.inject_torrent(
-      calculate_infohash(source_torrent_data), new_torrent_filepath, save_path_override=output_location
+      calculate_infohash(source_torrent_data), new_torrent_filepath, save_path_override=output_parent_directory
     )
 
   def __validate_config(self, config: Config):
