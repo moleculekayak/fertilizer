@@ -14,7 +14,7 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 class TestScanTorrentFile(SetupTeardown):
   def test_gets_mad_if_torrent_file_does_not_exist(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
-      scan_torrent_file("/tmp/nonexistent.torrent", "/tmp/output", red_api, ops_api)
+      scan_torrent_file("/tmp/nonexistent.torrent", "/tmp/output", red_api, ops_api, None)
 
   def test_creates_output_directory_if_it_does_not_exist(self, red_api, ops_api):
     shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
@@ -24,7 +24,7 @@ class TestScanTorrentFile(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/new_output", red_api, ops_api)
+      scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/new_output", red_api, ops_api, None)
 
     assert os.path.isdir("/tmp/new_output")
     shutil.rmtree("/tmp/new_output")
@@ -36,7 +36,7 @@ class TestScanTorrentFile(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      filepath = scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api)
+      filepath = scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
 
       assert os.path.isfile(filepath)
       assert filepath == "/tmp/output/foo [OPS].torrent"
@@ -46,7 +46,7 @@ class TestScanTorrentFile(SetupTeardown):
     shutil.copy(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
 
     with pytest.raises(TorrentAlreadyExistsError) as excinfo:
-      scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api)
+      scan_torrent_file("/tmp/input/red_source.torrent", "/tmp/output", red_api, ops_api, None)
 
     assert str(excinfo.value) == "Torrent already exists in output directory as Big Buck Bunny"
 
@@ -54,11 +54,11 @@ class TestScanTorrentFile(SetupTeardown):
 class TestScanTorrentDirectory(SetupTeardown):
   def test_gets_mad_if_input_directory_does_not_exist(self, red_api, ops_api):
     with pytest.raises(FileNotFoundError):
-      scan_torrent_directory("/tmp/nonexistent", "/tmp/output", red_api, ops_api)
+      scan_torrent_directory("/tmp/nonexistent", "/tmp/output", red_api, ops_api, None)
 
   def test_creates_output_directory_if_it_does_not_exist(self, red_api, ops_api):
     shutil.rmtree("/tmp/new_output", ignore_errors=True)
-    scan_torrent_directory("/tmp/input", "/tmp/new_output", red_api, ops_api)
+    scan_torrent_directory("/tmp/input", "/tmp/new_output", red_api, ops_api, None)
 
     assert os.path.isdir("/tmp/new_output")
     shutil.rmtree("/tmp/new_output")
@@ -70,7 +70,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert (
@@ -82,7 +82,7 @@ class TestScanTorrentDirectory(SetupTeardown):
   def test_lists_undecodable_torrents(self, capsys, red_api, ops_api):
     shutil.copy(get_torrent_path("broken"), "/tmp/input/broken.torrent")
 
-    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
     captured = capsys.readouterr()
 
     assert f"{Fore.RED}Error decoding torrent file{Fore.RESET}" in captured.out
@@ -91,7 +91,7 @@ class TestScanTorrentDirectory(SetupTeardown):
   def test_lists_unknown_tracker_torrents(self, capsys, red_api, ops_api):
     shutil.copy(get_torrent_path("no_source"), "/tmp/input/no_source.torrent")
 
-    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
     captured = capsys.readouterr()
 
     assert (
@@ -107,7 +107,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert (
@@ -119,7 +119,7 @@ class TestScanTorrentDirectory(SetupTeardown):
     shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     shutil.copy(get_torrent_path("ops_source"), "/tmp/input/ops_source.torrent")
 
-    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
     captured = capsys.readouterr()
 
     assert (
@@ -131,7 +131,7 @@ class TestScanTorrentDirectory(SetupTeardown):
     shutil.copy(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     shutil.copy(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
 
-    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+    print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
     captured = capsys.readouterr()
 
     assert (
@@ -146,7 +146,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_KNOWN_BAD_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert f"{Fore.LIGHTRED_EX}Torrent could not be found on OPS{Fore.RESET}" in captured.out
@@ -159,7 +159,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_UNKNOWN_BAD_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert f"{Fore.RED}An unknown error occurred in the API response from OPS{Fore.RESET}" in captured.out
@@ -174,7 +174,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert "Analyzed 3 local torrents" in captured.out
@@ -200,7 +200,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api))
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None))
       captured = capsys.readouterr()
 
       assert "Analyzed 0 local torrents" in captured.out

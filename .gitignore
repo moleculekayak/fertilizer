@@ -134,6 +134,7 @@ cython_debug/
 .env
 scratchpad.md
 .DS_Store
+tmp/
 
 *.torrent
 !tests/support/torrents/*.torrent

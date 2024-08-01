@@ -48,3 +48,7 @@ class ConfigKeyError(Exception):
 
 class TorrentClientError(Exception):
   pass
+
+
+class TorrentInjectionError(Exception):
+  pass

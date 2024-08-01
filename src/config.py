@@ -31,13 +31,25 @@ class Config:
 
   @property
   def server_port(self) -> str:
-    return self.__get_key("port", "9713")
+    return self.__get_key("port", must_exist=False) or "9713"
 
-  def __get_key(self, key, default=None):
+  @property
+  def deluge_rpc_url(self) -> str | None:
+    return self.__get_key("deluge_rpc_url", must_exist=False) or None
+
+  @property
+  def inject_torrents(self) -> str | bool:
+    return self.__get_key("inject_torrents", must_exist=False) or False
+
+  @property
+  def injection_link_directory(self) -> str | None:
+    return self.__get_key("injection_link_directory", must_exist=False) or None
+
+  def __get_key(self, key, must_exist=True):
     try:
       return self._json[key]
     except KeyError:
-      if default is not None:
-        return default
+      if must_exist:
+        raise ConfigKeyError(f"Key '{key}' not found in config file.")
 
-      raise ConfigKeyError(f"Key '{key}' not found in config file.")
+      return None

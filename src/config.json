@@ -1,4 +1,7 @@
 {
   "red_key": "xxxxxxxxxx",
-  "ops_key": "xxxxxxxxxx"
+  "ops_key": "xxxxxxxxxx",
+  "deluge_rpc_url": null,
+  "inject_torrents": false,
+  "injection_link_directory": null
 }

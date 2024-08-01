@@ -228,7 +228,7 @@ class TestInjectTorrent(SetupTeardown):
         json={"result": "abc123"},
       )
 
-      response = deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
+      deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
       request_params = m.request_history[1].json()["params"]
 
       assert request_params[2] == {"download_location": "/tmp/override/", "seed_mode": True, "add_paused": False}

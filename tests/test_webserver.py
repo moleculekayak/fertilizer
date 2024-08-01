@@ -17,6 +17,7 @@ def app(red_api, ops_api):
       "output_dir": "/tmp/output",
       "red_api": red_api,
       "ops_api": ops_api,
+      "injector": None,
     }
   )
 

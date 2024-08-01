@@ -24,6 +24,7 @@ class Deluge(TorrentClient):
     return connection_response
 
   def get_torrent_info(self, infohash):
+    infohash = infohash.lower()
     params = [
       [
         "name",
