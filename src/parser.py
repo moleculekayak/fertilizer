@@ -1,3 +1,4 @@
+import os
 import copy
 import bencoder
 from hashlib import sha1
@@ -69,8 +70,11 @@ def get_torrent_data(filename: str) -> dict:
     return None
 
 
-def save_torrent_data(filename: str, torrent_data: dict) -> str:
-  with open(filename, "wb") as f:
+def save_torrent_data(filepath: str, torrent_data: dict) -> str:
+  parent_dir = os.path.dirname(filepath)
+  os.makedirs(parent_dir, exist_ok=True)
+
+  with open(filepath, "wb") as f:
     f.write(bencoder.encode(torrent_data))
 
-  return filename
+  return filepath

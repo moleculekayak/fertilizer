@@ -6,6 +6,11 @@ def get_torrent_path(name):
   return f"tests/support/torrents/{name}.torrent"
 
 
+def copy_and_mkdir(src, dst):
+  os.makedirs(os.path.dirname(dst), exist_ok=True)
+  return shutil.copy(src, dst)
+
+
 class SetupTeardown:
   TORRENT_SUCCESS_RESPONSE = {"status": "success", "response": {"torrent": {"filePath": "foo", "id": 123}}}
   TORRENT_KNOWN_BAD_RESPONSE = {"status": "failure", "error": "bad hash parameter"}
@@ -23,3 +28,5 @@ class SetupTeardown:
   def teardown_method(self):
     shutil.rmtree("/tmp/input", ignore_errors=True)
     shutil.rmtree("/tmp/output", ignore_errors=True)
+    shutil.rmtree("/tmp/OPS", ignore_errors=True)
+    shutil.rmtree("/tmp/RED", ignore_errors=True)

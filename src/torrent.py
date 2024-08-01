@@ -93,7 +93,7 @@ def generate_torrent_output_filepath(api_response: dict, new_source: str, output
 
   filepath_from_api_response = unescape(api_response["response"]["torrent"]["filePath"])
   filename = f"{filepath_from_api_response} [{new_source}].torrent"
-  torrent_filepath = os.path.join(output_directory, filename)
+  torrent_filepath = os.path.join(output_directory, new_source, filename)
 
   if os.path.isfile(torrent_filepath):
     raise TorrentAlreadyExistsError(f"Torrent file already exists at {torrent_filepath}")
