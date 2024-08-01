@@ -14,7 +14,7 @@ from .parser import (
 
 
 def generate_new_torrent_from_file(
-  old_torrent_path: str,
+  source_torrent_path: str,
   output_directory: str,
   red_api: RedAPI,
   ops_api: OpsAPI,
@@ -25,7 +25,7 @@ def generate_new_torrent_from_file(
   Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
 
   Args:
-    `old_torrent_path` (`str`): The path to the original torrent file.
+    `source_torrent_path` (`str`): The path to the original torrent file.
     `output_directory` (`str`): The directory to save the new torrent file.
     `red_api` (`RedApi`): The pre-configured API object for RED.
     `ops_api` (`OpsApi`): The pre-configured API object for OPS.
@@ -41,13 +41,13 @@ def generate_new_torrent_from_file(
     `Exception`: if an unknown error occurs.
   """
 
-  old_torrent_data, old_tracker = __get_torrent_data_and_tracker(old_torrent_path)
-  new_torrent_data = copy.deepcopy(old_torrent_data)
-  new_tracker = old_tracker.reciprocal_tracker()
+  source_torrent_data, source_tracker = __get_torrent_data_and_tracker(source_torrent_path)
+  new_torrent_data = copy.deepcopy(source_torrent_data)
+  new_tracker = source_tracker.reciprocal_tracker()
   new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
 
   for new_source in new_tracker.source_flags_for_creation():
-    new_hash = recalculate_hash_for_new_source(old_torrent_data, new_source)
+    new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
 
     if new_hash in input_infohashes:
       raise TorrentAlreadyExistsError(f"Torrent already exists in input directory as {input_infohashes[new_hash]}")
@@ -93,7 +93,7 @@ def generate_torrent_output_filepath(api_response: dict, new_source: str, output
 
   filepath_from_api_response = unescape(api_response["response"]["torrent"]["filePath"])
   filename = f"{filepath_from_api_response} [{new_source}].torrent"
-  torrent_filepath = os.path.join(output_directory, filename)
+  torrent_filepath = os.path.join(output_directory, new_source, filename)
 
   if os.path.isfile(torrent_filepath):
     raise TorrentAlreadyExistsError(f"Torrent file already exists at {torrent_filepath}")
@@ -110,17 +110,17 @@ def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
 
 
 def __get_torrent_data_and_tracker(torrent_path):
-  old_torrent_data = get_torrent_data(torrent_path)
+  source_torrent_data = get_torrent_data(torrent_path)
 
-  if not old_torrent_data:
+  if not source_torrent_data:
     raise TorrentDecodingError("Error decoding torrent file")
 
-  old_tracker = get_origin_tracker(old_torrent_data)
+  source_tracker = get_origin_tracker(source_torrent_data)
 
-  if not old_tracker:
+  if not source_tracker:
     raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")
 
-  return old_torrent_data, old_tracker
+  return source_torrent_data, source_tracker
 
 
 def __get_reciprocal_tracker_api(new_tracker, red_api, ops_api):

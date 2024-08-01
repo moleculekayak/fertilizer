@@ -44,3 +44,11 @@ class TorrentAlreadyExistsError(Exception):
 
 class ConfigKeyError(Exception):
   pass
+
+
+class TorrentClientError(Exception):
+  pass
+
+
+class TorrentInjectionError(Exception):
+  pass

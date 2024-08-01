@@ -1,11 +1,12 @@
 import os
 
-from .support import get_torrent_path, SetupTeardown
+from .helpers import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker, OpsTracker
 from src.parser import (
   is_valid_infohash,
   get_source,
+  get_name,
   get_torrent_data,
   get_announce_url,
   get_origin_tracker,
@@ -32,6 +33,14 @@ class TestGetSource(SetupTeardown):
 
   def test_returns_none_if_absent(self):
     assert get_source({}) is None
+
+
+class TestGetName(SetupTeardown):
+  def test_returns_name_if_present(self):
+    assert get_name({b"info": {b"name": b"foo"}}) == b"foo"
+
+  def test_returns_none_if_absent(self):
+    assert get_name({}) is None
 
 
 class TestGetAnnounceUrl(SetupTeardown):
@@ -122,5 +131,15 @@ class TestSaveTorrentData(SetupTeardown):
     result = save_torrent_data(filename, torrent_data)
 
     assert result == filename
+
+    os.remove(filename)
+
+  def test_creates_parent_directory(self):
+    torrent_data = {b"info": {b"source": b"RED"}}
+    filename = "/tmp/output/foo/test_save_torrent_data.torrent"
+
+    save_torrent_data(filename, torrent_data)
+
+    assert os.path.exists("/tmp/output/foo")
 
     os.remove(filename)

@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from .support import SetupTeardown
+from .helpers import SetupTeardown
 
 from src.config import Config
 from src.errors import ConfigKeyError

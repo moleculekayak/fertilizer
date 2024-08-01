@@ -29,6 +29,7 @@ def webhook():
       config["output_dir"],
       config["red_api"],
       config["ops_api"],
+      config["injector"],
     )
 
     return http_success(new_filepath, 201)
@@ -53,13 +54,14 @@ def http_error(message, code):
   return {"status": "error", "message": message}, code
 
 
-def run_webserver(input_dir, output_dir, red_api, ops_api, host="0.0.0.0", port=9713):
+def run_webserver(input_dir, output_dir, red_api, ops_api, injector, host="0.0.0.0", port=9713):
   app.config.update(
     {
       "input_dir": input_dir,
       "output_dir": output_dir,
       "red_api": red_api,
       "ops_api": ops_api,
+      "injector": injector,
     }
   )
 

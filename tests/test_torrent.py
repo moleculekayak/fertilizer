@@ -3,7 +3,7 @@ import re
 import pytest
 import requests_mock
 
-from .support import get_torrent_path, SetupTeardown
+from .helpers import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker
 from src.parser import get_torrent_data
@@ -91,6 +91,8 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
   def test_raises_error_if_torrent_already_exists(self, red_api, ops_api):
     filepath = generate_torrent_output_filepath(self.TORRENT_SUCCESS_RESPONSE, "OPS", "/tmp")
+
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "w") as f:
       f.write("")
 
@@ -132,17 +134,19 @@ class TestGenerateTorrentOutputFilepath(SetupTeardown):
   API_RESPONSE = {"response": {"torrent": {"filePath": "foo"}}}
 
   def test_constructs_a_path_from_response_and_source(self):
-    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "src", "base/dir")
+    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "base/dir")
 
-    assert filepath == "base/dir/foo [src].torrent"
+    assert filepath == "base/dir/OPS/foo [OPS].torrent"
 
   def test_raises_error_if_file_exists(self):
-    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "src", "/tmp")
+    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "/tmp")
+
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "w") as f:
       f.write("")
 
     with pytest.raises(TorrentAlreadyExistsError) as excinfo:
-      generate_torrent_output_filepath(self.API_RESPONSE, "src", "/tmp")
+      generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "/tmp")
 
     assert str(excinfo.value) == f"Torrent file already exists at {filepath}"
     os.remove(filepath)
