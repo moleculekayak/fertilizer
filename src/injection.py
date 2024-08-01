@@ -15,14 +15,14 @@ class Injection:
     self.client = self.__determine_torrent_client(config)
     self.client.setup()
 
-  def inject_torrent(self, old_torrent_filepath, new_torrent_filepath, new_tracker):
-    old_torrent_data = get_torrent_data(old_torrent_filepath)
-    old_torrent_file_or_dir = self.__determine_torrent_data_location(old_torrent_data)
-    output_location = self.__determine_output_location(old_torrent_file_or_dir, new_tracker)
-    self.__link_files_to_output_location(old_torrent_file_or_dir, output_location)
+  def inject_torrent(self, source_torrent_filepath, new_torrent_filepath, new_tracker):
+    source_torrent_data = get_torrent_data(source_torrent_filepath)
+    source_torrent_file_or_dir = self.__determine_torrent_data_location(source_torrent_data)
+    output_location = self.__determine_output_location(source_torrent_file_or_dir, new_tracker)
+    self.__link_files_to_output_location(source_torrent_file_or_dir, output_location)
 
     return self.client.inject_torrent(
-      calculate_infohash(old_torrent_data), new_torrent_filepath, save_path_override=output_location
+      calculate_infohash(source_torrent_data), new_torrent_filepath, save_path_override=output_location
     )
 
   def __validate_config(self, config: Config):
@@ -78,19 +78,19 @@ class Injection:
       f"Could not determine the location of the torrent data: {proposed_torrent_data_location}"
     )
 
-  def __determine_output_location(self, old_torrent_file_or_dir, new_tracker):
+  def __determine_output_location(self, source_torrent_file_or_dir, new_tracker):
     tracker_output_directory = os.path.join(self.linking_directory, new_tracker)
     os.makedirs(tracker_output_directory, exist_ok=True)
 
-    return os.path.join(tracker_output_directory, os.path.basename(old_torrent_file_or_dir))
+    return os.path.join(tracker_output_directory, os.path.basename(source_torrent_file_or_dir))
 
-  def __link_files_to_output_location(self, old_torrent_file_or_dir, output_location):
+  def __link_files_to_output_location(self, source_torrent_file_or_dir, output_location):
     if os.path.exists(output_location):
       raise TorrentInjectionError(f"Cannot link given torrent since it's already been linked: {output_location}")
 
-    if os.path.isfile(old_torrent_file_or_dir):
-      os.link(old_torrent_file_or_dir, output_location)
-    elif os.path.isdir(old_torrent_file_or_dir):
-      shutil.copytree(old_torrent_file_or_dir, output_location, copy_function=os.link)
+    if os.path.isfile(source_torrent_file_or_dir):
+      os.link(source_torrent_file_or_dir, output_location)
+    elif os.path.isdir(source_torrent_file_or_dir):
+      shutil.copytree(source_torrent_file_or_dir, output_location, copy_function=os.link)
 
     return output_location

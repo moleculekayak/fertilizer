@@ -59,25 +59,24 @@ class Deluge(TorrentClient):
       "save_path": torrent["save_path"],
     }
 
-  def inject_torrent(self, old_torrent_infohash, new_torrent_filepath, save_path_override=None):
-    old_torrent_info = self.get_torrent_info(old_torrent_infohash)
+  def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
+    source_torrent_info = self.get_torrent_info(source_torrent_infohash)
 
-    if not old_torrent_info["complete"]:
+    if not source_torrent_info["complete"]:
       raise TorrentClientError("Cannot inject a torrent that is not complete")
 
     params = [
       f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
       base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
       {
-        # TODO: in future, we should hardlink the data instead of sharing the same path
-        "download_location": save_path_override if save_path_override else old_torrent_info["save_path"],
+        "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
         "seed_mode": True,
         "add_paused": False,
       },
     ]
 
     new_torrent_infohash = self.__request("core.add_torrent_file", params)
-    newtorrent_label = self.__determine_label(old_torrent_info)
+    newtorrent_label = self.__determine_label(source_torrent_info)
     self.__set_label(new_torrent_infohash, newtorrent_label)
 
     return new_torrent_infohash
