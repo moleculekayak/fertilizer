@@ -2,3 +2,7 @@
 <h1 align="center">fertilizer (based on <a target="_blank" href="https://github.com/soranosita/crops">crops</a>)</h1>
 
 <p align="center">Fertilizer helps grow your seeds</p>
+
+---
+
+<p align="center">Read the <a target="_blank" href="https://github.com/moleculekayak/fertilizer/wiki">Almanac</a> for help</p>
