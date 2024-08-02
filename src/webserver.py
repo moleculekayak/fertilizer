@@ -1,4 +1,5 @@
 import os
+import logging
 from flask import Flask, request
 
 from src.parser import is_valid_infohash
@@ -6,6 +7,17 @@ from src.scanner import scan_torrent_file
 from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 
 app = Flask(__name__)
+
+
+@app.before_request
+def log_request_info():
+  app.logger.info(f"Incoming webhook with body: {request.get_data()}")
+
+
+@app.after_request
+def log_response_info(response):
+  app.logger.info(f"Responding: {response.get_data()}")
+  return response
 
 
 @app.route("/api/webhook", methods=["POST"])
@@ -55,6 +67,7 @@ def http_error(message, code):
 
 
 def run_webserver(input_dir, output_dir, red_api, ops_api, injector, host="0.0.0.0", port=9713):
+  app.logger.setLevel(logging.INFO)
   app.config.update(
     {
       "input_dir": input_dir,
