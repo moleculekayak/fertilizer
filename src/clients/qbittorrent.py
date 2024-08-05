@@ -35,7 +35,6 @@ class Qbittorrent(TorrentClient):
         "complete": torrent_completed,
         "label": torrent["category"],
         "save_path": torrent["save_path"],
-        # TODO: do something with this
         "content_path": torrent["content_path"],
       }
     else:

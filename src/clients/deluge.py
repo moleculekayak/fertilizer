@@ -62,7 +62,6 @@ class Deluge(TorrentClient):
       "complete": torrent_completed,
       "label": torrent.get("label"),
       "save_path": torrent["save_path"],
-      # TODO: do something with this
       "content_path": sane_join(torrent["save_path"], torrent["name"]),
     }
 

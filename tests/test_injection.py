@@ -84,7 +84,7 @@ class TestInjectTorrent(SetupTeardown):
     new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
     copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
     injector.client.inject_torrent.return_value = "abc123"
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     result = injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
 
@@ -99,7 +99,7 @@ class TestInjectTorrent(SetupTeardown):
     source_torrent_filepath = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
     copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
 
@@ -111,7 +111,7 @@ class TestInjectTorrent(SetupTeardown):
     new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
     # This is a singular file, not a directory
     copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny")
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
 
@@ -123,7 +123,7 @@ class TestInjectTorrent(SetupTeardown):
     source_torrent_filepath = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
     copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "TRACKER")
 
@@ -132,7 +132,7 @@ class TestInjectTorrent(SetupTeardown):
   def test_raises_error_if_input_files_missing(self, injector):
     source_torrent_filepath = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
     new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     with pytest.raises(TorrentInjectionError) as excinfo:
       injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
@@ -145,7 +145,7 @@ class TestInjectTorrent(SetupTeardown):
     parent_dir = "/tmp/injection/OPS/Big Buck Bunny"
 
     copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
-    injector.client.get_torrent_info.return_value = {"save_path": "/tmp/input"}
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
 
     os.makedirs(parent_dir)
 
