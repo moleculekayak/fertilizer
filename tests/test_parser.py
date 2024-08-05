@@ -7,11 +7,11 @@ from src.parser import (
   is_valid_infohash,
   get_source,
   get_name,
-  get_torrent_data,
+  get_bencoded_data,
   get_announce_url,
   get_origin_tracker,
   recalculate_hash_for_new_source,
-  save_torrent_data,
+  save_bencoded_data,
   calculate_infohash,
 )
 
@@ -44,8 +44,14 @@ class TestGetName(SetupTeardown):
 
 
 class TestGetAnnounceUrl(SetupTeardown):
-  def test_returns_url_if_present(self):
-    assert get_announce_url({b"announce": b"https://foo.bar"}) == b"https://foo.bar"
+  def test_returns_url_if_present_in_announce(self):
+    assert get_announce_url({b"announce": b"https://foo.bar"}) == [b"https://foo.bar"]
+
+  def test_returns_url_if_present_in_trackers(self):
+    assert get_announce_url({b"trackers": [[b"https://foo.bar"], b"https://baz.qux"]}) == [
+      b"https://foo.bar",
+      b"https://baz.qux",
+    ]
 
   def test_returns_none_if_absent(self):
     assert get_announce_url({}) is None
@@ -64,6 +70,12 @@ class TestGetOriginTracker(SetupTeardown):
 
   def test_returns_ops_based_on_announce(self):
     assert get_origin_tracker({b"announce": b"https://home.opsfet.ch/123abc"}) == OpsTracker
+
+  def test_returns_red_based_on_trackers(self):
+    assert get_origin_tracker({b"trackers": [[b"https://flacsfor.me/123abc"], b"https://baz.qux"]}) == RedTracker
+
+  def test_returns_ops_based_on_trackers(self):
+    assert get_origin_tracker({b"trackers": [[b"https://home.opsfet.ch/123abc"], b"https://baz.qux"]}) == OpsTracker
 
   def test_returns_none_if_no_match(self):
     assert get_origin_tracker({}) is None
@@ -99,13 +111,13 @@ class TestRecalculateHashForNewSource(SetupTeardown):
 
 class TestGetTorrentData(SetupTeardown):
   def test_returns_torrent_data(self):
-    result = get_torrent_data(get_torrent_path("no_source"))
+    result = get_bencoded_data(get_torrent_path("no_source"))
 
     assert isinstance(result, dict)
     assert b"info" in result
 
   def test_returns_none_on_error(self):
-    result = get_torrent_data(get_torrent_path("broken"))
+    result = get_bencoded_data(get_torrent_path("broken"))
 
     assert result is None
 
@@ -113,9 +125,9 @@ class TestGetTorrentData(SetupTeardown):
 class TestSaveTorrentData(SetupTeardown):
   def test_saves_torrent_data(self):
     torrent_data = {b"info": {b"source": b"RED"}}
-    filename = "/tmp/test_save_torrent_data.torrent"
+    filename = "/tmp/test_save_bencoded_data.torrent"
 
-    save_torrent_data(filename, torrent_data)
+    save_bencoded_data(filename, torrent_data)
 
     with open(filename, "rb") as f:
       result = f.read()
@@ -126,9 +138,9 @@ class TestSaveTorrentData(SetupTeardown):
 
   def test_returns_filename(self):
     torrent_data = {b"info": {b"source": b"RED"}}
-    filename = "/tmp/test_save_torrent_data.torrent"
+    filename = "/tmp/test_save_bencoded_data.torrent"
 
-    result = save_torrent_data(filename, torrent_data)
+    result = save_bencoded_data(filename, torrent_data)
 
     assert result == filename
 
@@ -136,9 +148,9 @@ class TestSaveTorrentData(SetupTeardown):
 
   def test_creates_parent_directory(self):
     torrent_data = {b"info": {b"source": b"RED"}}
-    filename = "/tmp/output/foo/test_save_torrent_data.torrent"
+    filename = "/tmp/output/foo/test_save_bencoded_data.torrent"
 
-    save_torrent_data(filename, torrent_data)
+    save_bencoded_data(filename, torrent_data)
 
     assert os.path.exists("/tmp/output/foo")
 
