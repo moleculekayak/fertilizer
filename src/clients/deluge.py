@@ -66,6 +66,7 @@ class Deluge(TorrentClient):
       "content_path": sane_join(torrent["save_path"], torrent["name"]),
     }
 
+  # TODO: consider checking if the torrent is already in the client
   def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
     source_torrent_info = self.get_torrent_info(source_torrent_infohash)
 
@@ -83,7 +84,7 @@ class Deluge(TorrentClient):
     ]
 
     new_torrent_infohash = self.__wrap_request("core.add_torrent_file", params)
-    newtorrent_label = self.__determine_label(source_torrent_info)
+    newtorrent_label = self._determine_label(source_torrent_info)
     self.__set_label(new_torrent_infohash, newtorrent_label)
 
     return new_torrent_infohash
@@ -104,14 +105,6 @@ class Deluge(TorrentClient):
     response = self.__wrap_request("core.get_enabled_plugins")
 
     return "Label" in response
-
-  def __determine_label(self, torrent_info):
-    current_label = torrent_info.get("label")
-
-    if not current_label or current_label == self.torrent_label:
-      return self.torrent_label
-
-    return f"{current_label}.{self.torrent_label}"
 
   def __set_label(self, infohash, label):
     if not self._label_plugin_enabled:

@@ -1,9 +1,12 @@
 import json
+import base64
 import requests
+from pathlib import Path
 from urllib.parse import urlencode
 from requests.structures import CaseInsensitiveDict
 
 from ..filesystem import sane_join
+from ..parser import get_bencoded_data, calculate_infohash
 from ..errors import TorrentClientError, TorrentClientAuthenticationError
 from .torrent_client import TorrentClient
 
@@ -19,10 +22,15 @@ class Qbittorrent(TorrentClient):
     return self
 
   def get_torrent_info(self, infohash):
-    response = self.request(f"torrents/info", {"hashes": infohash})
+    response = self.__request(f"torrents/info", data={"hashes": infohash})
 
     if response:
-      torrent = json.loads(response)[0]
+      parsed_response = json.loads(response)
+
+      if not parsed_response:
+        raise TorrentClientError(f"Torrent not found in client ({infohash})")
+
+      torrent = parsed_response[0]
       torrent_completed = (
         torrent["progress"] == 1.0 or 
         torrent["state"] == "pausedUP" or
@@ -37,7 +45,28 @@ class Qbittorrent(TorrentClient):
         "content_path": torrent["content_path"],
       }
     else:
-      raise TorrentClientError("Failed to get torrent info")
+      raise TorrentClientError("Client returned unexpected response")
+
+  def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
+    source_torrent_info = self.get_torrent_info(source_torrent_infohash)
+    new_torrent_infohash = calculate_infohash(get_bencoded_data(new_torrent_filepath)).lower()
+    new_torrent_already_exists = self.__does_torrent_exist_in_client(new_torrent_infohash)
+
+    if new_torrent_already_exists:
+      raise TorrentClientError(f"New torrent already exists in client ({new_torrent_infohash})")
+
+    injection_filename = f"{Path(new_torrent_filepath).stem}.fertilizer.torrent"
+    torrents = {"torrents": (injection_filename, open(new_torrent_filepath, "rb"), "application/x-bittorrent")}
+    params = {
+      "autoTMM": False,
+      "category": self._determine_label(source_torrent_info),
+      "tags": self.torrent_label,
+      "savepath": save_path_override if save_path_override else source_torrent_info["save_path"],
+    }
+
+    self.__request("torrents/add", data=params, files=torrents)
+
+    return new_torrent_infohash
 
   def __authenticate(self):
     href, username, password = self._qbit_url_parts
@@ -58,14 +87,15 @@ class Qbittorrent(TorrentClient):
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
   # TODO: wrap this like I did with deluge
-  def request(self, path, body = None):
+  def __request(self, path, data = None, files = None):
     href, _username, _password = self._qbit_url_parts
 
     try:
       response = requests.post(
         sane_join(href, path),
         headers=CaseInsensitiveDict({"Cookie": self._qbit_cookie}),
-        data=body,
+        data=data,
+        files=files,
       )
 
       response.raise_for_status()
@@ -74,3 +104,9 @@ class Qbittorrent(TorrentClient):
     # TODO: handle 403 (and other) errors the same way deluge does
     except requests.RequestException as e:
       return None
+
+  def __does_torrent_exist_in_client(self, infohash):
+    try:
+      return bool(self.get_torrent_info(infohash))
+    except TorrentClientError as e:
+      return False

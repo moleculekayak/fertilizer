@@ -29,3 +29,14 @@ class TorrentClient:
       href = sane_join(origin, (parsed_url.path if parsed_url.path != "/" else ""))
 
     return href, username, password
+
+  def _determine_label(self, torrent_info):
+    current_label = torrent_info.get("label")
+
+    if not current_label:
+      return self.torrent_label
+    
+    if current_label == self.torrent_label or current_label.endswith(f".{self.torrent_label}"):
+      return current_label
+
+    return f"{current_label}.{self.torrent_label}"
