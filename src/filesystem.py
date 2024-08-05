@@ -1,6 +1,13 @@
 import os
 
 
+def sane_join(*args: str) -> str:
+  path_parts = [part.lstrip(os.path.sep) for part in args[1:]]
+  path_parts.insert(0, args[0])
+
+  return os.path.join(*path_parts)
+
+
 def mkdir_p(directory_path: str) -> str:
   if not os.path.exists(directory_path):
     os.makedirs(directory_path)

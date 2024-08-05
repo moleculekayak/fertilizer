@@ -3,8 +3,9 @@ import shutil
 
 from .errors import TorrentInjectionError
 from .clients.deluge import Deluge
+from .clients.qbittorrent import Qbittorrent
 from .config import Config
-from .parser import calculate_infohash, get_name, get_bencoded_data
+from .parser import calculate_infohash, get_bencoded_data
 
 
 class Injection:
@@ -19,7 +20,7 @@ class Injection:
 
   def inject_torrent(self, source_torrent_filepath, new_torrent_filepath, new_tracker):
     source_torrent_data = get_bencoded_data(source_torrent_filepath)
-    source_torrent_file_or_dir = self.__determine_torrent_data_location(source_torrent_data)
+    source_torrent_file_or_dir = self.__determine_source_torrent_data_location(source_torrent_data)
     output_location = self.__determine_output_location(source_torrent_file_or_dir, new_tracker)
     self.__link_files_to_output_location(source_torrent_file_or_dir, output_location)
     output_parent_directory = os.path.dirname(os.path.normpath(output_location))
@@ -37,20 +38,20 @@ class Injection:
     if not config.injection_link_directory:
       raise TorrentInjectionError("No injection link directory specified in the config file.")
 
-    # NOTE: will add more checks here as more clients get added
-    if not config.deluge_rpc_url:
+    if (not config.deluge_rpc_url) and (not config.qbittorrent_url):
       raise TorrentInjectionError("No torrent client configuration specified in the config file.")
 
     return config
 
   def __determine_torrent_client(self, config: Config):
-    # NOTE: will add more conditions here as more clients get added
     if config.deluge_rpc_url:
       return Deluge(config.deluge_rpc_url)
+    elif config.qbittorrent_url:
+      return Qbittorrent(config.qbittorrent_url)
 
   # If the torrent is a single bare file, this returns the path _to that file_
   # If the torrent is one or many files in a directory, this returns the topmost directory path
-  def __determine_torrent_data_location(self, torrent_data):
+  def __determine_source_torrent_data_location(self, torrent_data):
     # Note on torrent file structures:
     # --------
     # From my testing, all torrents have a `name` stored at `[b"info"][b"name"]`. This appears to always
@@ -72,9 +73,7 @@ class Injection:
     # See also: https://en.wikipedia.org/wiki/Torrent_file#File_struct
     infohash = calculate_infohash(torrent_data)
     torrent_info_from_client = self.client.get_torrent_info(infohash)
-    client_save_path = torrent_info_from_client["save_path"]
-    torrent_name = get_name(torrent_data).decode()
-    proposed_torrent_data_location = os.path.join(client_save_path, torrent_name)
+    proposed_torrent_data_location = torrent_info_from_client["content_path"]
 
     if os.path.exists(proposed_torrent_data_location):
       return proposed_torrent_data_location

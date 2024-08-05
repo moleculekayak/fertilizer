@@ -3,7 +3,19 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.filesystem import mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
+from src.filesystem import sane_join, mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
+
+
+class TestSaneJoin(SetupTeardown):
+  def test_joins_paths(self):
+    path = sane_join("/tmp", "test", "file")
+
+    assert path == "/tmp/test/file"
+
+  def test_joins_paths_when_some_have_leading_slash(self):
+    path = sane_join("/tmp", "/test", "file")
+
+    assert path == "/tmp/test/file"
 
 
 class TestMkdirP(SetupTeardown):

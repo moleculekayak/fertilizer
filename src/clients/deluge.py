@@ -3,6 +3,7 @@ import base64
 import requests
 from pathlib import Path
 
+from ..filesystem import sane_join
 from ..errors import TorrentClientError, TorrentClientAuthenticationError
 from .torrent_client import TorrentClient
 from requests.exceptions import RequestException
@@ -61,6 +62,7 @@ class Deluge(TorrentClient):
       "complete": torrent_completed,
       "label": torrent.get("label"),
       "save_path": torrent["save_path"],
+      "content_path": sane_join(torrent["save_path"], torrent["name"]),
     }
 
   def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
@@ -80,7 +82,7 @@ class Deluge(TorrentClient):
     ]
 
     new_torrent_infohash = self.__wrap_request("core.add_torrent_file", params)
-    newtorrent_label = self.__determine_label(source_torrent_info)
+    newtorrent_label = self._determine_label(source_torrent_info)
     self.__set_label(new_torrent_infohash, newtorrent_label)
 
     return new_torrent_infohash
@@ -101,14 +103,6 @@ class Deluge(TorrentClient):
     response = self.__wrap_request("core.get_enabled_plugins")
 
     return "Label" in response
-
-  def __determine_label(self, torrent_info):
-    current_label = torrent_info.get("label")
-
-    if not current_label or current_label == self.torrent_label:
-      return self.torrent_label
-
-    return f"{current_label}.{self.torrent_label}"
 
   def __set_label(self, infohash, label):
     if not self._label_plugin_enabled:
@@ -162,7 +156,7 @@ class Deluge(TorrentClient):
     if "error" in json_response and json_response["error"]:
       if json_response["error"]["code"] == self.ERROR_CODES["NO_AUTH"]:
         raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
-      raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
+      raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']['message']}")
 
     return json_response["result"]
 
