@@ -31,7 +31,7 @@ def deluge_client():
 @pytest.fixture
 def torrent_info_response():
   return {
-    "name": "foo.torrent",
+    "name": "foo",
     "state": "Seeding",
     "progress": 100.0,
     "save_path": "/tmp/bar/",
@@ -131,6 +131,7 @@ class TestGetTorrentInfo(SetupTeardown):
         "complete": True,
         "label": "fertilizer",
         "save_path": "/tmp/bar/",
+        "content_path": "/tmp/bar/foo",
       }
 
   def test_raises_if_no_torrents_returned(self, api_url, deluge_client):

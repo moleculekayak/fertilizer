@@ -35,7 +35,7 @@ class TorrentClient:
 
     if not current_label:
       return self.torrent_label
-    
+
     if current_label == self.torrent_label or current_label.endswith(f".{self.torrent_label}"):
       return current_label
 

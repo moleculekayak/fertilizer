@@ -29,11 +29,7 @@ class Qbittorrent(TorrentClient):
         raise TorrentClientError(f"Torrent not found in client ({infohash})")
 
       torrent = parsed_response[0]
-      torrent_completed = (
-        torrent["progress"] == 1.0 or 
-        torrent["state"] == "pausedUP" or
-        torrent["completion_on"] > 0
-      )
+      torrent_completed = torrent["progress"] == 1.0 or torrent["state"] == "pausedUP" or torrent["completion_on"] > 0
 
       return {
         "complete": torrent_completed,
@@ -86,14 +82,14 @@ class Qbittorrent(TorrentClient):
     if not self._qbit_cookie:
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
-  def __wrap_request(self, path, data = None, files = None):
+  def __wrap_request(self, path, data=None, files=None):
     try:
       return self.__request(path, data, files)
     except TorrentClientAuthenticationError:
       self.__authenticate()
       return self.__request(path, data, files)
 
-  def __request(self, path, data = None, files = None):
+  def __request(self, path, data=None, files=None):
     href, _username, _password = self._qbit_url_parts
 
     try:
@@ -111,7 +107,7 @@ class Qbittorrent(TorrentClient):
       if e.response.status_code == 403:
         print(e.response.text)
         raise TorrentClientAuthenticationError("Failed to authenticate with qBittorrent")
-      
+
       raise TorrentClientError(f"qBittorrent request to '{path}' failed: {e}")
 
   def __does_torrent_exist_in_client(self, infohash):

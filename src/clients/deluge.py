@@ -158,7 +158,7 @@ class Deluge(TorrentClient):
     if "error" in json_response and json_response["error"]:
       if json_response["error"]["code"] == self.ERROR_CODES["NO_AUTH"]:
         raise TorrentClientAuthenticationError("Failed to authenticate with Deluge")
-      raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']}")
+      raise TorrentClientError(f"Deluge method {method} returned an error: {json_response['error']['message']}")
 
     return json_response["result"]
 
