@@ -3,6 +3,7 @@ import base64
 import requests
 from pathlib import Path
 
+from ..filesystem import sane_join
 from ..errors import TorrentClientError, TorrentClientAuthenticationError
 from .torrent_client import TorrentClient
 from requests.exceptions import RequestException
@@ -61,6 +62,8 @@ class Deluge(TorrentClient):
       "complete": torrent_completed,
       "label": torrent.get("label"),
       "save_path": torrent["save_path"],
+      # TODO: do something with this
+      "content_path": sane_join(torrent["save_path"], torrent["name"]),
     }
 
   def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
