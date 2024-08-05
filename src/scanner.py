@@ -4,7 +4,7 @@ from .api import RedAPI, OpsAPI
 from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
 from .torrent import generate_new_torrent_from_file
-from .parser import get_torrent_data, calculate_infohash
+from .parser import get_bencoded_data, calculate_infohash
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 from .injection import Injection
 
@@ -134,7 +134,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
   infohash_dict = {}
 
   for filename in files:
-    torrent_data = get_torrent_data(filename)
+    torrent_data = get_bencoded_data(filename)
 
     if torrent_data:
       infohash = calculate_infohash(torrent_data)
