@@ -3,8 +3,7 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.filesystem import mkdir_p, assert_path_exists, list_files_of_extension
-# from src.errors import ConfigKeyError
+from src.filesystem import mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
 
 
 class TestMkdirP(SetupTeardown):
@@ -63,3 +62,12 @@ class TestListFilesOfExtension(SetupTeardown):
     files = list_files_of_extension(input_directory, ".txt")
 
     assert len(files) == 0
+
+
+class TestReplaceExtension(SetupTeardown):
+  def test_replaces_extension(self):
+    filepath = "tests/support/files/test.torrent"
+
+    new_filepath = replace_extension(filepath, ".json")
+
+    assert new_filepath == "tests/support/files/test.json"

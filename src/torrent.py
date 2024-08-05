@@ -5,6 +5,7 @@ from html import unescape
 from .api import RedAPI, OpsAPI
 from .trackers import RedTracker, OpsTracker
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
+from .filesystem import replace_extension
 from .parser import (
   get_bencoded_data,
   get_origin_tracker,
@@ -110,12 +111,22 @@ def __generate_torrent_url(site_url: str, torrent_id: str) -> str:
 
 
 def __get_bencoded_data_and_tracker(torrent_path):
+  # The fastresume stuff is to support qBittorrent since it doesn't store
+  # announce URLs in the torrent file IFF we're taking the file from `BT_backup`.
+  #
+  # qbit stores that information in a sidecar file that has the exact same name
+  # as the torrent file but with a `.fastresume` extension instead. It's also stored
+  # in a list of lists called `trackers` in this `.fastresume` file instead of `announce`.
+  fastresume_path = replace_extension(torrent_path, ".fastresume")
   source_torrent_data = get_bencoded_data(torrent_path)
+  fastresume_data = get_bencoded_data(fastresume_path)
 
   if not source_torrent_data:
     raise TorrentDecodingError("Error decoding torrent file")
 
-  source_tracker = get_origin_tracker(source_torrent_data)
+  torrent_tracker = get_origin_tracker(source_torrent_data)
+  fastresume_tracker = get_origin_tracker(fastresume_data) if fastresume_data else None
+  source_tracker = torrent_tracker or fastresume_tracker
 
   if not source_tracker:
     raise UnknownTrackerError("Torrent not from OPS or RED based on source or announce URL")

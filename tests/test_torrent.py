@@ -43,6 +43,21 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       os.remove(filepath)
 
+  def test_works_with_qbit_fastresume_files(self, red_api, ops_api):
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      torrent_path = get_torrent_path("qbit_ops")
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      parsed_torrent = get_bencoded_data(filepath)
+
+      assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
+      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"info"][b"source"] == b"RED"
+
+      os.remove(filepath)
+
   def test_returns_new_tracker_instance_and_filepath(self, red_api, ops_api):
     with requests_mock.Mocker() as m:
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
