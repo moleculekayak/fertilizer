@@ -1,8 +1,6 @@
 import json
-import base64
 import requests
 from pathlib import Path
-from urllib.parse import urlencode
 from requests.structures import CaseInsensitiveDict
 
 from ..filesystem import sane_join
@@ -22,7 +20,7 @@ class Qbittorrent(TorrentClient):
     return self
 
   def get_torrent_info(self, infohash):
-    response = self.__request(f"torrents/info", data={"hashes": infohash})
+    response = self.__wrap_request(f"torrents/info", data={"hashes": infohash})
 
     if response:
       parsed_response = json.loads(response)
@@ -64,7 +62,7 @@ class Qbittorrent(TorrentClient):
       "savepath": save_path_override if save_path_override else source_torrent_info["save_path"],
     }
 
-    self.__request("torrents/add", data=params, files=torrents)
+    self.__wrap_request("torrents/add", data=params, files=torrents)
 
     return new_torrent_infohash
 
@@ -73,10 +71,12 @@ class Qbittorrent(TorrentClient):
 
     try:
       if username or password:
-        payload = urlencode({"username": username, "password": password})
+        payload = {"username": username, "password": password}
       else:
         payload = {}
 
+      # This method specifically does not use the __wrap_request method
+      # because we want to avoid an infinite loop of re-authenticating
       response = requests.post(f"{href}/auth/login", data=payload)
       response.raise_for_status()
     except requests.RequestException as e:
@@ -86,14 +86,20 @@ class Qbittorrent(TorrentClient):
     if not self._qbit_cookie:
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
-  # TODO: wrap this like I did with deluge
+  def __wrap_request(self, path, data = None, files = None):
+    try:
+      return self.__request(path, data, files)
+    except TorrentClientAuthenticationError:
+      self.__authenticate()
+      return self.__request(path, data, files)
+
   def __request(self, path, data = None, files = None):
     href, _username, _password = self._qbit_url_parts
 
     try:
       response = requests.post(
         sane_join(href, path),
-        headers=CaseInsensitiveDict({"Cookie": self._qbit_cookie}),
+        headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
         data=data,
         files=files,
       )
@@ -101,9 +107,12 @@ class Qbittorrent(TorrentClient):
       response.raise_for_status()
 
       return response.text
-    # TODO: handle 403 (and other) errors the same way deluge does
     except requests.RequestException as e:
-      return None
+      if e.response.status_code == 403:
+        print(e.response.text)
+        raise TorrentClientAuthenticationError("Failed to authenticate with qBittorrent")
+      
+      raise TorrentClientError(f"qBittorrent request to '{path}' failed: {e}")
 
   def __does_torrent_exist_in_client(self, infohash):
     try:
