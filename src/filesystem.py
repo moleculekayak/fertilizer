@@ -1,7 +1,6 @@
 import os
 
 
-# TODO: test
 def sane_join(*args: str) -> str:
   path_parts = [part.lstrip(os.path.sep) for part in args[1:]]
   path_parts.insert(0, args[0])

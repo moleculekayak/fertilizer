@@ -65,7 +65,6 @@ class Deluge(TorrentClient):
       "content_path": sane_join(torrent["save_path"], torrent["name"]),
     }
 
-  # TODO: consider checking if the torrent is already in the client
   def inject_torrent(self, source_torrent_infohash, new_torrent_filepath, save_path_override=None):
     source_torrent_info = self.get_torrent_info(source_torrent_infohash)
 
