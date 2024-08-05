@@ -20,7 +20,7 @@ class Qbittorrent(TorrentClient):
     return self
 
   def get_torrent_info(self, infohash):
-    response = self.__wrap_request(f"torrents/info", data={"hashes": infohash})
+    response = self.__wrap_request("torrents/info", data={"hashes": infohash})
 
     if response:
       parsed_response = json.loads(response)
@@ -113,5 +113,5 @@ class Qbittorrent(TorrentClient):
   def __does_torrent_exist_in_client(self, infohash):
     try:
       return bool(self.get_torrent_info(infohash))
-    except TorrentClientError as e:
+    except TorrentClientError:
       return False

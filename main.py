@@ -7,9 +7,6 @@ from src.scanner import scan_torrent_directory, scan_torrent_file
 from src.webserver import run_webserver
 from src.injection import Injection
 
-import os
-from src.clients.qbittorrent import Qbittorrent
-
 
 def cli_entrypoint(args):
   try:
@@ -41,14 +38,10 @@ def __verify_api_keys(config):
 
 
 if __name__ == "__main__":
-  # args = parse_args()
-  # config = Config().load("tmp/config.json")
-  qbit = Qbittorrent(os.environ.get("QBIT_URL"))
-  print(qbit.setup())
-  print(qbit.get_torrent_info(os.environ.get("QBIT_TORRENT_HASH")))
+  args = parse_args()
+
   try:
-    # cli_entrypoint(args)
-    pass
+    cli_entrypoint(args)
   except KeyboardInterrupt:
     print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)

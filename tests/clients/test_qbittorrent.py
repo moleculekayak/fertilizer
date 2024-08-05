@@ -1,5 +1,4 @@
 import re
-import base64
 import pytest
 import requests_mock
 
