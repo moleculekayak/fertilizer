@@ -38,6 +38,10 @@ class Config:
     return self.__get_key("deluge_rpc_url", must_exist=False) or None
 
   @property
+  def qbittorrent_url(self) -> str | None:
+    return self.__get_key("qbittorrent_url", must_exist=False) or None
+
+  @property
   def inject_torrents(self) -> str | bool:
     return self.__get_key("inject_torrents", must_exist=False) or False
 

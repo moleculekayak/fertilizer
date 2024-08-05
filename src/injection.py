@@ -3,6 +3,7 @@ import shutil
 
 from .errors import TorrentInjectionError
 from .clients.deluge import Deluge
+from .clients.qbittorrent import Qbittorrent
 from .config import Config
 from .parser import calculate_infohash, get_name, get_bencoded_data
 
@@ -37,16 +38,16 @@ class Injection:
     if not config.injection_link_directory:
       raise TorrentInjectionError("No injection link directory specified in the config file.")
 
-    # NOTE: will add more checks here as more clients get added
-    if not config.deluge_rpc_url:
+    if (not config.deluge_rpc_url) and (not config.qbittorrent_url):
       raise TorrentInjectionError("No torrent client configuration specified in the config file.")
 
     return config
 
   def __determine_torrent_client(self, config: Config):
-    # NOTE: will add more conditions here as more clients get added
     if config.deluge_rpc_url:
       return Deluge(config.deluge_rpc_url)
+    elif config.qbittorrent_url:
+      return Qbittorrent(config.qbittorrent_url)
 
   # If the torrent is a single bare file, this returns the path _to that file_
   # If the torrent is one or many files in a directory, this returns the topmost directory path
