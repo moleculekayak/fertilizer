@@ -19,3 +19,7 @@ def list_files_of_extension(input_directory: str, extension: str = ".torrent") -
   return [
     os.path.join(input_directory, filename) for filename in os.listdir(input_directory) if filename.endswith(extension)
   ]
+
+
+def replace_extension(filepath: str, new_extension: str) -> str:
+  return os.path.splitext(filepath)[0] + new_extension

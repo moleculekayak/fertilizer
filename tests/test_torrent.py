@@ -6,7 +6,7 @@ import requests_mock
 from .helpers import get_torrent_path, SetupTeardown
 
 from src.trackers import RedTracker
-from src.parser import get_torrent_data
+from src.parser import get_bencoded_data
 from src.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
 from src.torrent import generate_new_torrent_from_file, generate_torrent_output_filepath
 
@@ -19,7 +19,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       torrent_path = get_torrent_path("red_source")
       _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
-      parsed_torrent = get_torrent_data(filepath)
+      parsed_torrent = get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
       assert parsed_torrent[b"announce"] == b"https://home.opsfet.ch/bar/announce"
@@ -35,7 +35,22 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       torrent_path = get_torrent_path("ops_source")
       _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
-      parsed_torrent = get_torrent_data(filepath)
+      parsed_torrent = get_bencoded_data(filepath)
+
+      assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
+      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"info"][b"source"] == b"RED"
+
+      os.remove(filepath)
+
+  def test_works_with_qbit_fastresume_files(self, red_api, ops_api):
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      torrent_path = get_torrent_path("qbit_ops")
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
       assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
@@ -50,7 +65,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       torrent_path = get_torrent_path("ops_source")
       new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
-      get_torrent_data(filepath)
+      get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
       assert new_tracker == RedTracker

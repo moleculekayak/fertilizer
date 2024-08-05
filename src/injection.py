@@ -4,7 +4,7 @@ import shutil
 from .errors import TorrentInjectionError
 from .clients.deluge import Deluge
 from .config import Config
-from .parser import calculate_infohash, get_name, get_torrent_data
+from .parser import calculate_infohash, get_name, get_bencoded_data
 
 
 class Injection:
@@ -18,7 +18,7 @@ class Injection:
     return self
 
   def inject_torrent(self, source_torrent_filepath, new_torrent_filepath, new_tracker):
-    source_torrent_data = get_torrent_data(source_torrent_filepath)
+    source_torrent_data = get_bencoded_data(source_torrent_filepath)
     source_torrent_file_or_dir = self.__determine_torrent_data_location(source_torrent_data)
     output_location = self.__determine_output_location(source_torrent_file_or_dir, new_tracker)
     self.__link_files_to_output_location(source_torrent_file_or_dir, output_location)
