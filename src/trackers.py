@@ -27,7 +27,7 @@ class OpsTracker(Tracker):
 
   @staticmethod
   def source_flags_for_creation():
-    return [b"OPS"]
+    return [b"OPS", b"APL", b""]
 
   @staticmethod
   def announce_url():
@@ -49,7 +49,7 @@ class RedTracker(Tracker):
 
   @staticmethod
   def source_flags_for_creation():
-    return [b"RED"]
+    return [b"RED", b"PTH", b""]
 
   @staticmethod
   def announce_url():

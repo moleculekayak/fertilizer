@@ -8,7 +8,7 @@ from .helpers import get_torrent_path, SetupTeardown
 from src.trackers import RedTracker
 from src.parser import get_bencoded_data
 from src.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
-from src.torrent import generate_new_torrent_from_file, generate_torrent_output_filepath
+from src.torrent import generate_new_torrent_from_file
 
 
 class TestGenerateNewTorrentFromFile(SetupTeardown):
@@ -72,6 +72,48 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       os.remove(filepath)
 
+  def test_works_with_alternate_sources_for_creation(self, red_api, ops_api):
+    with requests_mock.Mocker() as m:
+      m.get(
+        re.compile("action=torrent"),
+        [{"json": self.TORRENT_KNOWN_BAD_RESPONSE}, {"json": self.TORRENT_SUCCESS_RESPONSE}],
+      )
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      torrent_path = get_torrent_path("ops_source")
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      parsed_torrent = get_bencoded_data(filepath)
+
+      assert filepath == "/tmp/RED/foo [PTH].torrent"
+      assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
+      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"info"][b"source"] == b"PTH"
+
+      os.remove(filepath)
+
+  def test_works_with_blank_source_for_creation(self, red_api, ops_api):
+    with requests_mock.Mocker() as m:
+      m.get(
+        re.compile("action=torrent"),
+        [
+          {"json": self.TORRENT_KNOWN_BAD_RESPONSE},
+          {"json": self.TORRENT_KNOWN_BAD_RESPONSE},
+          {"json": self.TORRENT_SUCCESS_RESPONSE},
+        ],
+      )
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      torrent_path = get_torrent_path("ops_source")
+      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      parsed_torrent = get_bencoded_data(filepath)
+
+      assert filepath == "/tmp/RED/foo.torrent"
+      assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
+      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"info"][b"source"] == b""
+
+      os.remove(filepath)
+
   def test_raises_error_if_cannot_decode_torrent(self, red_api, ops_api):
     with pytest.raises(TorrentDecodingError) as excinfo:
       torrent_path = get_torrent_path("broken")
@@ -105,7 +147,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     assert str(excinfo.value) == "Torrent already exists in output directory as bar"
 
   def test_raises_error_if_torrent_already_exists(self, red_api, ops_api):
-    filepath = generate_torrent_output_filepath(self.TORRENT_SUCCESS_RESPONSE, "OPS", "/tmp")
+    filepath = "/tmp/OPS/foo [OPS].torrent"
 
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "w") as f:
@@ -143,25 +185,3 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
         generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
     assert str(excinfo.value) == "An unknown error occurred in the API response from OPS"
-
-
-class TestGenerateTorrentOutputFilepath(SetupTeardown):
-  API_RESPONSE = {"response": {"torrent": {"filePath": "foo"}}}
-
-  def test_constructs_a_path_from_response_and_source(self):
-    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "base/dir")
-
-    assert filepath == "base/dir/OPS/foo [OPS].torrent"
-
-  def test_raises_error_if_file_exists(self):
-    filepath = generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "/tmp")
-
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
-    with open(filepath, "w") as f:
-      f.write("")
-
-    with pytest.raises(TorrentAlreadyExistsError) as excinfo:
-      generate_torrent_output_filepath(self.API_RESPONSE, "OPS", "/tmp")
-
-    assert str(excinfo.value) == f"Torrent file already exists at {filepath}"
-    os.remove(filepath)
