@@ -73,7 +73,7 @@ class Deluge(TorrentClient):
 
     params = [
       f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
-      base64.b64encode(open(new_torrent_filepath, "rb").read()).decode(),
+      base64.b64encode(open(new_torrent_filepath, "rb").read()).decode("utf-8"),
       {
         "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
         "seed_mode": True,
