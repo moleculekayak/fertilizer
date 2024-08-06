@@ -6,11 +6,11 @@ from src.trackers import RedTracker, OpsTracker
 class TestTrackerMethods(SetupTeardown):
   def test_source_flags_for_search(self):
     assert RedTracker.source_flags_for_search() == [b"RED", b"PTH"]
-    assert OpsTracker.source_flags_for_search() == [b"OPS"]
+    assert OpsTracker.source_flags_for_search() == [b"OPS", b"APL"]
 
   def test_source_flags_for_creation(self):
-    assert RedTracker.source_flags_for_creation() == [b"RED"]
-    assert OpsTracker.source_flags_for_creation() == [b"OPS"]
+    assert RedTracker.source_flags_for_creation() == [b"RED", b"PTH", b""]
+    assert OpsTracker.source_flags_for_creation() == [b"OPS", b"APL", b""]
 
   def test_announce_url(self):
     assert RedTracker.announce_url() == b"flacsfor.me"
