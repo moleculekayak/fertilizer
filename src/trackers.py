@@ -23,7 +23,7 @@ class Tracker:
 class OpsTracker(Tracker):
   @staticmethod
   def source_flags_for_search():
-    return [b"OPS"]
+    return [b"OPS", b"APL"]
 
   @staticmethod
   def source_flags_for_creation():
