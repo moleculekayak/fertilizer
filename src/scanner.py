@@ -134,10 +134,13 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
   infohash_dict = {}
 
   for filename in files:
-    torrent_data = get_bencoded_data(filename)
+    try:
+      torrent_data = get_bencoded_data(filename)
 
-    if torrent_data:
-      infohash = calculate_infohash(torrent_data)
-      infohash_dict[infohash] = torrent_data[b"info"][b"name"].decode()
+      if torrent_data:
+        infohash = calculate_infohash(torrent_data)
+        infohash_dict[infohash] = torrent_data[b"info"][b"name"].decode("utf-8")
+    except UnicodeDecodeError:
+      continue
 
   return infohash_dict
