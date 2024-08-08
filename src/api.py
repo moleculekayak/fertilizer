@@ -81,13 +81,13 @@ class GazelleAPI:
       else:
         sleep(0.2)
 
-    handle_error(description="Maximum number of retries reached", should_exit=True)
+    handle_error(description="Maximum number of retries reached", should_raise=True)
 
   def __get_announce_url(self):
     try:
       account_info = self.get_account_info()
     except AuthenticationError as e:
-      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=e, should_exit=True)
+      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=e, should_raise=True)
 
     passkey = account_info["response"]["passkey"]
     return f"{self.tracker_url}/{passkey}/announce"
