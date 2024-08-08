@@ -77,7 +77,8 @@ def get_bencoded_data(filename: str) -> dict:
 
 def save_bencoded_data(filepath: str, torrent_data: dict) -> str:
   parent_dir = os.path.dirname(filepath)
-  os.makedirs(parent_dir, exist_ok=True)
+  if parent_dir:
+    os.makedirs(parent_dir, exist_ok=True)
 
   with open(filepath, "wb") as f:
     f.write(bencoder.encode(torrent_data))
