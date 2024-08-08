@@ -5,7 +5,13 @@ from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
 from .torrent import generate_new_torrent_from_file
 from .parser import get_bencoded_data, calculate_infohash
-from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
+from .errors import (
+  TorrentDecodingError,
+  UnknownTrackerError,
+  TorrentNotFoundError,
+  TorrentAlreadyExistsError,
+  TorrentExistsInClientError,
+)
 from .injection import Injection
 
 
@@ -36,7 +42,7 @@ def scan_torrent_file(
   output_torrents = list_files_of_extension(output_directory, ".torrent")
   output_infohashes = __collect_infohashes_from_files(output_torrents)
 
-  new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
+  new_tracker, new_torrent_filepath, _ = generate_new_torrent_from_file(
     source_torrent_path,
     output_directory,
     red_api,
@@ -92,7 +98,7 @@ def scan_torrent_directory(
     print(f"({i}/{p.total}) {basename}")
 
     try:
-      new_tracker, new_torrent_filepath = generate_new_torrent_from_file(
+      new_tracker, new_torrent_filepath, was_previously_generated = generate_new_torrent_from_file(
         source_torrent_path,
         output_directory,
         red_api,
@@ -108,9 +114,15 @@ def scan_torrent_directory(
           new_tracker.site_shortname(),
         )
 
-      p.generated.print(
-        f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
-      )
+      if was_previously_generated:
+        if injector:
+          p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
+        else:
+          p.already_exists.print("Torrent was previously generated.")
+      else:
+        p.generated.print(
+          f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
+        )
     except TorrentDecodingError as e:
       p.error.print(str(e))
       continue
@@ -118,6 +130,9 @@ def scan_torrent_directory(
       p.skipped.print(str(e))
       continue
     except TorrentAlreadyExistsError as e:
+      p.already_exists.print(str(e))
+      continue
+    except TorrentExistsInClientError as e:
       p.already_exists.print(str(e))
       continue
     except TorrentNotFoundError as e:
@@ -133,13 +148,13 @@ def scan_torrent_directory(
 def __collect_infohashes_from_files(files: list[str]) -> dict:
   infohash_dict = {}
 
-  for filename in files:
+  for filepath in files:
     try:
-      torrent_data = get_bencoded_data(filename)
+      torrent_data = get_bencoded_data(filepath)
 
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
-        infohash_dict[infohash] = torrent_data[b"info"][b"name"].decode("utf-8")
+        infohash_dict[infohash] = filepath
     except UnicodeDecodeError:
       continue
 
