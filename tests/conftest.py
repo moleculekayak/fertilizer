@@ -1,4 +1,5 @@
 import pytest
+import requests_mock
 
 from src.config import Config
 from src.api import RedAPI, OpsAPI
@@ -26,3 +27,10 @@ def ops_api():
   instance = OpsAPI("opssecret", delay_in_seconds=0)
   instance._max_retries = 1
   return instance
+
+
+# This _should_ prevent all tests from making real requests to the internet.
+@pytest.fixture(autouse=True)
+def stub_or_disable_requests():
+  with requests_mock.Mocker():
+    yield

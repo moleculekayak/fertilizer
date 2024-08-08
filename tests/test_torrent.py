@@ -18,7 +18,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("red_source")
-      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
@@ -34,7 +34,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
@@ -49,7 +49,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("qbit_ops")
-      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
@@ -58,17 +58,18 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       os.remove(filepath)
 
-  def test_returns_new_tracker_instance_and_filepath(self, red_api, ops_api):
+  def test_returns_expected_tuple(self, red_api, ops_api):
     with requests_mock.Mocker() as m:
       m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      new_tracker, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      new_tracker, filepath, previously_generated = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
       assert new_tracker == RedTracker
+      assert previously_generated is False
 
       os.remove(filepath)
 
@@ -81,7 +82,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert filepath == "/tmp/RED/foo [PTH].torrent"
@@ -104,7 +105,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      _, filepath = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
       parsed_torrent = get_bencoded_data(filepath)
 
       assert filepath == "/tmp/RED/foo.torrent"
@@ -129,39 +130,37 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     assert str(excinfo.value) == "Torrent not from OPS or RED based on source or announce URL"
 
   def test_raises_error_if_infohash_found_in_input(self, red_api, ops_api):
-    input_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "foo"}
+    input_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "/path/to/foo"}
 
     with pytest.raises(TorrentAlreadyExistsError) as excinfo:
       torrent_path = get_torrent_path("red_source")
       generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, input_hashes)
 
-    assert str(excinfo.value) == "Torrent already exists in input directory as foo"
+    assert str(excinfo.value) == "Torrent already exists in input directory at /path/to/foo"
 
-  def test_raises_error_if_infohash_found_in_output(self, red_api, ops_api):
+  def test_returns_appropriately_if_infohash_found_in_output(self, red_api, ops_api):
     output_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "bar"}
 
-    with pytest.raises(TorrentAlreadyExistsError) as excinfo:
-      torrent_path = get_torrent_path("red_source")
-      generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, {}, output_hashes)
+    torrent_path = get_torrent_path("red_source")
+    _, _, previously_generated = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, {}, output_hashes)
 
-    assert str(excinfo.value) == "Torrent already exists in output directory as bar"
+    assert previously_generated
 
-  def test_raises_error_if_torrent_already_exists(self, red_api, ops_api):
+  def test_returns_appropriately_if_torrent_already_exists(self, red_api, ops_api):
     filepath = "/tmp/OPS/foo [OPS].torrent"
 
     os.makedirs(os.path.dirname(filepath), exist_ok=True)
     with open(filepath, "w") as f:
       f.write("")
 
-    with pytest.raises(TorrentAlreadyExistsError) as excinfo:
-      with requests_mock.Mocker() as m:
-        m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
-        m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
-        torrent_path = get_torrent_path("red_source")
-        generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      torrent_path = get_torrent_path("red_source")
+      _, _, previously_generated = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
 
-    assert str(excinfo.value) == f"Torrent file already exists at {filepath}"
+    assert previously_generated
     os.remove(filepath)
 
   def test_raises_error_if_api_response_error(self, red_api, ops_api):

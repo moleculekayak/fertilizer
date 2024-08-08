@@ -74,7 +74,7 @@ class TestWebserverWebhook(SetupTeardown):
       assert response.json == {"status": "success", "message": "/tmp/output/OPS/foo [OPS].torrent"}
       assert os.path.exists("/tmp/output/OPS/foo [OPS].torrent")
 
-  def test_raises_error_if_torrent_already_exists(self, client, infohash):
+  def test_returns_okay_if_torrent_already_found(self, client, infohash):
     copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/{infohash}.torrent")
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/output/OPS/foo [OPS].torrent")
 
@@ -83,11 +83,8 @@ class TestWebserverWebhook(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       response = client.post("/api/webhook", data={"infohash": infohash})
-      assert response.status_code == 409
-      assert response.json == {
-        "status": "error",
-        "message": "Torrent file already exists at /tmp/output/OPS/foo [OPS].torrent",
-      }
+      assert response.status_code == 201
+      assert response.json == {"status": "success", "message": "/tmp/output/OPS/foo [OPS].torrent"}
 
   def test_raises_error_if_torrent_not_found(self, client, infohash):
     copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/{infohash}.torrent")
