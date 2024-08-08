@@ -5,7 +5,7 @@ from requests.structures import CaseInsensitiveDict
 
 from ..filesystem import sane_join
 from ..parser import get_bencoded_data, calculate_infohash
-from ..errors import TorrentClientError, TorrentClientAuthenticationError
+from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from .torrent_client import TorrentClient
 
 
@@ -46,7 +46,7 @@ class Qbittorrent(TorrentClient):
     new_torrent_already_exists = self.__does_torrent_exist_in_client(new_torrent_infohash)
 
     if new_torrent_already_exists:
-      raise TorrentClientError(f"New torrent already exists in client ({new_torrent_infohash})")
+      raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
 
     injection_filename = f"{Path(new_torrent_filepath).stem}.fertilizer.torrent"
     torrents = {"torrents": (injection_filename, open(new_torrent_filepath, "rb"), "application/x-bittorrent")}

@@ -14,7 +14,7 @@ from tests.support.deluge_matchers import (
   torrent_info_matcher,
 )
 
-from src.errors import TorrentClientError, TorrentClientAuthenticationError
+from src.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from src.clients.deluge import Deluge
 
 
@@ -221,12 +221,17 @@ class TestInjectTorrent(SetupTeardown):
     with requests_mock.Mocker() as m:
       m.post(
         api_url,
-        additional_matcher=torrent_info_matcher,
-        json={
-          "result": {
-            "torrents": {"foo": torrent_info_response},
+        [
+          {"json": {"result": {"torrents": {}}}},
+          {
+            "json": {
+              "result": {
+                "torrents": {"foo": torrent_info_response},
+              },
+            }
           },
-        },
+        ],
+        additional_matcher=torrent_info_matcher,
       )
 
       m.post(
@@ -236,7 +241,7 @@ class TestInjectTorrent(SetupTeardown):
       )
 
       response = deluge_client.inject_torrent("foo", torrent_path)
-      request_params = m.request_history[1].json()["params"]
+      request_params = m.request_history[2].json()["params"]
 
       assert response == "abc123"
       assert request_params[0] == "red_source.fertilizer.torrent"
@@ -249,12 +254,17 @@ class TestInjectTorrent(SetupTeardown):
     with requests_mock.Mocker() as m:
       m.post(
         api_url,
-        additional_matcher=torrent_info_matcher,
-        json={
-          "result": {
-            "torrents": {"foo": torrent_info_response},
+        [
+          {"json": {"result": {"torrents": {}}}},
+          {
+            "json": {
+              "result": {
+                "torrents": {"foo": torrent_info_response},
+              },
+            }
           },
-        },
+        ],
+        additional_matcher=torrent_info_matcher,
       )
 
       m.post(
@@ -264,9 +274,24 @@ class TestInjectTorrent(SetupTeardown):
       )
 
       deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
-      request_params = m.request_history[1].json()["params"]
+      request_params = m.request_history[2].json()["params"]
 
       assert request_params[2] == {"download_location": "/tmp/override/", "seed_mode": True, "add_paused": False}
+
+  def test_raises_if_torrent_exists_in_client(self, api_url, deluge_client, torrent_info_response):
+    torrent_path = get_torrent_path("red_source")
+
+    with requests_mock.Mocker() as m:
+      m.post(
+        api_url,
+        json={"result": {"torrents": {"f15a59b9620fbf4cb06407c10399607367d9204d": torrent_info_response}}},
+        additional_matcher=torrent_info_matcher,
+      )
+
+      with pytest.raises(TorrentExistsInClientError) as excinfo:
+        deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
+
+      assert "New torrent already exists in client (f15a59b9620fbf4cb06407c10399607367d9204d)" in str(excinfo.value)
 
   def test_raises_if_torrent_not_complete(self, api_url, deluge_client, torrent_info_response):
     torrent_info_response["state"] = "Paused"

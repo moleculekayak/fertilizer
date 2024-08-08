@@ -4,7 +4,7 @@ import requests_mock
 
 from tests.helpers import SetupTeardown, get_torrent_path
 
-from src.errors import TorrentClientError, TorrentClientAuthenticationError
+from src.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from src.clients.qbittorrent import Qbittorrent
 
 
@@ -136,7 +136,7 @@ class TestInjectTorrent(SetupTeardown):
     with requests_mock.Mocker() as m:
       m.post(re.compile("torrents/info"), [{"json": [torrent_info_response]}, {"json": [torrent_info_response]}])
 
-      with pytest.raises(TorrentClientError) as excinfo:
+      with pytest.raises(TorrentExistsInClientError) as excinfo:
         qbit_client.inject_torrent("foo", torrent_path)
 
       assert "New torrent already exists in client" in str(excinfo.value)

@@ -50,6 +50,10 @@ class TorrentClientError(Exception):
   pass
 
 
+class TorrentExistsInClientError(Exception):
+  pass
+
+
 class TorrentClientAuthenticationError(Exception):
   pass
 

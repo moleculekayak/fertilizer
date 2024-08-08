@@ -9,7 +9,7 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentAlreadyExistsError
+from src.errors import TorrentExistsInClientError
 from src.scanner import scan_torrent_directory, scan_torrent_file
 
 
@@ -190,6 +190,22 @@ class TestScanTorrentDirectory(SetupTeardown):
     injector_mock.inject_torrent.assert_called_once_with(
       "/tmp/input/red_source.torrent", "/tmp/output/ops_source.torrent", "OPS"
     )
+
+  def test_lists_torrents_that_already_exist_in_client(self, capsys, red_api, ops_api):
+    injector_mock = MagicMock()
+    injector_mock.inject_torrent = MagicMock()
+    injector_mock.inject_torrent.side_effect = TorrentExistsInClientError("Torrent exists in client")
+    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      print(scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, injector_mock))
+      captured = capsys.readouterr()
+
+      assert f"{Fore.LIGHTYELLOW_EX}Torrent exists in client{Fore.RESET}" in captured.out
+      assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 1" in captured.out
 
   def test_lists_not_found_torrents(self, capsys, red_api, ops_api):
     copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")

@@ -64,7 +64,9 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       torrent_path = get_torrent_path("ops_source")
-      new_tracker, filepath, previously_generated = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+      new_tracker, filepath, previously_generated = generate_new_torrent_from_file(
+        torrent_path, "/tmp", red_api, ops_api
+      )
       get_bencoded_data(filepath)
 
       assert os.path.isfile(filepath)
@@ -142,7 +144,9 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     output_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "bar"}
 
     torrent_path = get_torrent_path("red_source")
-    _, _, previously_generated = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, {}, output_hashes)
+    _, _, previously_generated = generate_new_torrent_from_file(
+      torrent_path, "/tmp", red_api, ops_api, {}, output_hashes
+    )
 
     assert previously_generated
 

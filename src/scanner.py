@@ -5,7 +5,13 @@ from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .progress import Progress
 from .torrent import generate_new_torrent_from_file
 from .parser import get_bencoded_data, calculate_infohash
-from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
+from .errors import (
+  TorrentDecodingError,
+  UnknownTrackerError,
+  TorrentNotFoundError,
+  TorrentAlreadyExistsError,
+  TorrentExistsInClientError,
+)
 from .injection import Injection
 
 
@@ -102,7 +108,6 @@ def scan_torrent_directory(
       )
 
       if injector:
-        # TODO: ensure the error from a torrent already existing is caught and handled
         injector.inject_torrent(
           source_torrent_path,
           new_torrent_filepath,
@@ -125,6 +130,9 @@ def scan_torrent_directory(
       p.skipped.print(str(e))
       continue
     except TorrentAlreadyExistsError as e:
+      p.already_exists.print(str(e))
+      continue
+    except TorrentExistsInClientError as e:
       p.already_exists.print(str(e))
       continue
     except TorrentNotFoundError as e:
