@@ -11,11 +11,13 @@ from src.injection import Injection
 
 def cli_entrypoint(args):
   try:
-    config = command_log_wrapper("Reading config file:", lambda: Config().load(args.config_file))
-    red_api, ops_api = command_log_wrapper("Verifying API keys:", lambda: __verify_api_keys(config))
+    # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
+    should_print = args.input_directory or args.server
+    config = command_log_wrapper("Reading config file:", should_print, lambda: Config().load(args.config_file))
+    red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
 
     if config.inject_torrents:
-      injector = command_log_wrapper("Connecting to torrent client:", lambda: Injection(config).setup())
+      injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
     else:
       injector = None
 
@@ -42,18 +44,20 @@ def __verify_api_keys(config):
   return red_api, ops_api
 
 
-def command_log_wrapper(label, func):
-  print(f"{label} ", end="")
-  sys.stdout.flush()
+def command_log_wrapper(label, should_print, func):
+  def maybe_print(str, *args, **kwargs):
+    if should_print:
+      print(str, *args, **kwargs)
+      sys.stdout.flush()
+
+  maybe_print(f"{label} ", end="")
 
   try:
     result = func()
-    print(f"{Fore.GREEN}Success{Fore.RESET}")
-    sys.stdout.flush()
+    maybe_print(f"{Fore.GREEN}Success{Fore.RESET}")
     return result
   except Exception as e:
-    print(f"{Fore.RED}Error{Fore.RESET}")
-    sys.stdout.flush()
+    maybe_print(f"{Fore.RED}Error{Fore.RESET}")
     raise e
 
 
