@@ -140,6 +140,18 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
     assert str(excinfo.value) == "Torrent already exists in input directory at /path/to/foo"
 
+  def test_pre_checks_all_infohashes_for_collision(self, red_api, ops_api):
+    # This hash corresponds to that a torrent with the source of "APL"
+    input_hashes = {"84508469124335BDE03043105C6E54E00C17B04C": "/path/to/foo"}
+
+    with requests_mock.Mocker() as m:
+      with pytest.raises(TorrentAlreadyExistsError) as excinfo:
+        torrent_path = get_torrent_path("red_source")
+        generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api, input_hashes)
+
+      assert str(excinfo.value) == "Torrent already exists in input directory at /path/to/foo"
+      assert m.call_count == 0
+
   def test_returns_appropriately_if_infohash_found_in_output(self, red_api, ops_api):
     output_hashes = {"2AEE440CDC7429B3E4A7E4D20E3839DBB48D72C2": "bar"}
 
@@ -151,6 +163,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
     assert previously_generated
 
   def test_returns_appropriately_if_torrent_already_exists(self, red_api, ops_api):
+    # TODO: update to use copy_and_mkdir
     filepath = "/tmp/OPS/foo [OPS].torrent"
 
     os.makedirs(os.path.dirname(filepath), exist_ok=True)

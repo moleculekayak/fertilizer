@@ -52,10 +52,16 @@ def generate_new_torrent_from_file(
   for new_source in new_tracker.source_flags_for_creation():
     new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
 
-    if new_hash in input_infohashes:
-      raise TorrentAlreadyExistsError(f"Torrent already exists in input directory at {input_infohashes[new_hash]}")
-    if new_hash in output_infohashes:
-      return (new_tracker, output_infohashes[new_hash], True)
+    all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
+    found_input_hash = __check_matching_hashes(all_possible_hashes, input_infohashes)
+    found_output_hash = __check_matching_hashes(all_possible_hashes, output_infohashes)
+
+    if found_input_hash:
+      raise TorrentAlreadyExistsError(
+        f"Torrent already exists in input directory at {input_infohashes[found_input_hash]}"
+      )
+    if found_output_hash:
+      return (new_tracker, output_infohashes[found_output_hash], True)
 
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
@@ -84,6 +90,18 @@ def generate_new_torrent_from_file(
     raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
 
   raise Exception(f"An unknown error occurred in the API response from {new_tracker.site_shortname()}")
+
+
+def __calculate_all_possible_hashes(source_torrent_data: dict, sources: list[str]) -> list[str]:
+  return [recalculate_hash_for_new_source(source_torrent_data, source) for source in sources]
+
+
+def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) -> str:
+  for hash in all_possible_hashes:
+    if hash in infohashes:
+      return hash
+
+  return None
 
 
 def __generate_torrent_output_filepath(
