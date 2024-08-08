@@ -49,20 +49,19 @@ def generate_new_torrent_from_file(
   new_tracker_api = __get_reciprocal_tracker_api(new_tracker, red_api, ops_api)
   stored_api_response = None
 
+  all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
+  found_input_hash = __check_matching_hashes(all_possible_hashes, input_infohashes)
+  found_output_hash = __check_matching_hashes(all_possible_hashes, output_infohashes)
+
+  if found_input_hash:
+    raise TorrentAlreadyExistsError(
+      f"Torrent already exists in input directory at {input_infohashes[found_input_hash]}"
+    )
+  if found_output_hash:
+    return (new_tracker, output_infohashes[found_output_hash], True)
+
   for new_source in new_tracker.source_flags_for_creation():
     new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
-
-    all_possible_hashes = __calculate_all_possible_hashes(source_torrent_data, new_tracker.source_flags_for_creation())
-    found_input_hash = __check_matching_hashes(all_possible_hashes, input_infohashes)
-    found_output_hash = __check_matching_hashes(all_possible_hashes, output_infohashes)
-
-    if found_input_hash:
-      raise TorrentAlreadyExistsError(
-        f"Torrent already exists in input directory at {input_infohashes[found_input_hash]}"
-      )
-    if found_output_hash:
-      return (new_tracker, output_infohashes[found_output_hash], True)
-
     stored_api_response = new_tracker_api.find_torrent(new_hash)
 
     if stored_api_response["status"] == "success":
