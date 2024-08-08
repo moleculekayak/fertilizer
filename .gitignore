@@ -133,6 +133,7 @@ cython_debug/
 
 .env
 scratchpad.md
+scratchpad.py
 .DS_Store
 tmp/
 
