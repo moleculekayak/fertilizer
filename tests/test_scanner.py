@@ -297,3 +297,13 @@ class TestScanTorrentDirectory(SetupTeardown):
       m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
 
       scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None)
+
+  def test_doesnt_blow_up_if_other_torrent_has_no_info(self, red_api, ops_api):
+    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+    copy_and_mkdir(get_torrent_path("no_info"), "/tmp/input/no_info.torrent")
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      scan_torrent_directory("/tmp/input", "/tmp/output", red_api, ops_api, None)

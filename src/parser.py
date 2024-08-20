@@ -5,6 +5,7 @@ from hashlib import sha1
 
 from .utils import flatten
 from .trackers import RedTracker, OpsTracker
+from .errors import TorrentDecodingError
 
 
 def is_valid_infohash(infohash: str) -> bool:
@@ -55,8 +56,13 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
   return None
 
 
+# TODO: test
 def calculate_infohash(torrent_data: dict) -> str:
-  return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
+  try:
+    torrent_info = torrent_data[b"info"]
+    return sha1(bencoder.encode(torrent_info)).hexdigest().upper()
+  except KeyError:
+    raise TorrentDecodingError("Torrent file does not contain 'info' key")
 
 
 def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str)) -> str:
@@ -70,6 +76,7 @@ def get_bencoded_data(filename: str) -> dict:
   try:
     with open(filename, "rb") as f:
       data = bencoder.decode(f.read())
+
     return data
   except Exception:
     return None
