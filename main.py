@@ -14,12 +14,13 @@ def cli_entrypoint(args):
     # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
     should_print = args.input_directory or args.server
     config = command_log_wrapper("Reading config file:", should_print, lambda: Config().load(args.config_file))
-    red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
 
     if config.inject_torrents:
       injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
     else:
       injector = None
+
+    red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
 
     if args.server:
       run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
