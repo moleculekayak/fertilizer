@@ -163,14 +163,19 @@ def scan_torrent_directory(
 
 def __collect_infohashes_from_files(files: list[str]) -> dict:
   infohash_dict = {}
-
+  counter = 0
   for filepath in files:
+    counter += 1
     try:
       torrent_data = get_bencoded_data(filepath)
 
       if torrent_data:
-        infohash = calculate_infohash(torrent_data)
-        infohash_dict[infohash] = filepath
+        try:
+          infohash = calculate_infohash(torrent_data)
+          infohash_dict[infohash] = filepath
+        except KeyError as e:
+          print(f'KeyError: no "info" key in {filepath} (processed {counter} files)')
+          raise e
     except UnicodeDecodeError:
       continue
 
