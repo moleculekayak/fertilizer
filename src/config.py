@@ -1,6 +1,3 @@
-import json
-import os
-
 from .errors import ConfigKeyError
 
 
@@ -9,25 +6,23 @@ class Config:
   Class for loading and accessing the config file.
   """
 
-  def __init__(self):
-    self._json = {}
+  def __init__(self, configs: list[dict[str, str | bool]]):
+    self._config = {}
 
-  def load(self, config_filepath: str):
-    loaded = False
+    for config in configs:
+      self._config |= config
 
-    if os.path.exists(config_filepath):
-      with open(config_filepath, "r", encoding="utf-8") as f:
-        self._json |= json.loads(f.read())
-        loaded = True
+    if not self._config:
+      raise FileNotFoundError("Configuration not found.")
 
-    if os.getenv("RED_API_KEY") and os.getenv("OPS_API_KEY"):
-      self._json |= {"red_key": os.getenv("RED_API_KEY"), "ops_key": os.getenv("OPS_API_KEY")}
-      loaded = True
-
-    if not loaded:
-      raise FileNotFoundError(f"{config_filepath} does not exist and values not found in environment variables.")
-
-    return self
+  @staticmethod
+  def boolify_string_option(value: str):
+    if not value:
+      return None
+    if value.lower().strip() == "true":
+      return True
+    if value.lower().strip() == "false":
+      return False
 
   @property
   def red_key(self) -> str:
@@ -59,7 +54,7 @@ class Config:
 
   def __get_key(self, key, must_exist=True):
     try:
-      return self._json[key]
+      return self._config[key]
     except KeyError:
       if must_exist:
         raise ConfigKeyError(f"Key '{key}' not found in config file.")

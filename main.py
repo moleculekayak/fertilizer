@@ -1,4 +1,6 @@
 import sys
+import os
+import json
 from colorama import Fore
 
 from src.api import RedAPI, OpsAPI
@@ -14,7 +16,7 @@ def cli_entrypoint(args):
     # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
     should_print = args.input_directory or args.server
     config = command_log_wrapper(
-      "Reading configuration:", should_print, lambda: Config().load(args.config_file)
+      "Reading configuration:", should_print, lambda: __build_configuration(args.config_file)
     )
 
     if config.inject_torrents:
@@ -33,6 +35,32 @@ def cli_entrypoint(args):
   except Exception as e:
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
+
+
+def __build_configuration(config_file: str):
+  file_config = {}
+  if os.path.exists(config_file):
+    with open(config_file, "r", encoding="utf-8") as f:
+      file_config = json.loads(f.read())
+    if file_config.get("red_key") == "xxxxxxxxxx":
+      file_config.pop("red_key")
+    if file_config.get("ops_key") == "xxxxxxxxxx":
+      file_config.pop("ops_key")
+
+  env_vars = {
+    key: value
+    for key, value in {
+      "inject_torrents": Config.boolify_string_option(os.getenv("INJECT_TORRENTS")),
+      "injection_link_directory": os.getenv("INJECTION_LINK_TORRENTS"),
+      "deluge_rpc_url": os.getenv("DELUGE_RPC_URL"),
+      "qbittorrent_url": os.getenv("QBITTORRENT_URL"),
+      "red_key": os.getenv("RED_KEY"),
+      "ops_key": os.getenv("OPS_KEY"),
+    }.items()
+    if value
+  }
+
+  return Config([env_vars, file_config])
 
 
 def __verify_api_keys(config):
