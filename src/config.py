@@ -15,14 +15,14 @@ class Config:
   def load(self, config_filepath: str):
     loaded = False
 
-    if os.getenv("RED_API_KEY") and os.getenv("OPS_API_KEY"):
-      self._json |= {"red_key": os.getenv("RED_API_KEY"), "ops_key": os.getenv("OPS_API_KEY")}
-      loaded = True
-
     if os.path.exists(config_filepath):
       with open(config_filepath, "r", encoding="utf-8") as f:
         self._json |= json.loads(f.read())
         loaded = True
+
+    if os.getenv("RED_API_KEY") and os.getenv("OPS_API_KEY"):
+      self._json |= {"red_key": os.getenv("RED_API_KEY"), "ops_key": os.getenv("OPS_API_KEY")}
+      loaded = True
 
     if not loaded:
       raise FileNotFoundError(f"{config_filepath} does not exist and values not found in environment variables.")
