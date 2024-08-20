@@ -83,13 +83,29 @@ def scan_torrent_directory(
     `FileNotFoundError`: if the input directory does not exist.
   """
 
+  print(f"assert_path_exists called with {input_directory}")
   input_directory = assert_path_exists(input_directory)
-  output_directory = mkdir_p(output_directory)
+  print(f"assert_path_exists returned {input_directory}")
 
+  print(f"mkdir_p called with {output_directory}")
+  output_directory = mkdir_p(output_directory)
+  print(f"mkdir_p returned {output_directory}")
+
+  print(f"list_files_of_extension called with {input_directory}, '.torrent'")
   input_torrents = list_files_of_extension(input_directory, ".torrent")
+  print(f"list_files_of_extension returned {len(input_torrents)} torrents")
+
+  print(f"list_files_of_extension called with {output_directory}, '.torrent'")
   output_torrents = list_files_of_extension(output_directory, ".torrent")
+  print(f"list_files_of_extension returned {len(output_torrents)} torrents")
+
+  print("__collect_infohashes_from_files called")
   input_infohashes = __collect_infohashes_from_files(input_torrents)
+  print(f"__collect_infohashes_from_files returned {len(input_infohashes)} infohashes")
+
+  print("__collect_infohashes_from_files called")
   output_infohashes = __collect_infohashes_from_files(output_torrents)
+  print(f"__collect_infohashes_from_files returned {len(output_infohashes)} infohashes")
 
   p = Progress(len(input_torrents))
 

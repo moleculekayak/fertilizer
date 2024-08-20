@@ -10,27 +10,24 @@ from src.injection import Injection
 
 
 def cli_entrypoint(args):
-  try:
-    # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
-    should_print = args.input_directory or args.server
-    config = command_log_wrapper("Reading config file:", should_print, lambda: Config().load(args.config_file))
+  # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
+  should_print = args.input_directory or args.server
+  config = command_log_wrapper("Reading config file:", should_print, lambda: Config().load(args.config_file))
 
-    if config.inject_torrents:
-      injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
-    else:
-      injector = None
+  if config.inject_torrents:
+    injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
+  else:
+    injector = None
 
-    red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
+  # red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
 
-    if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
-    elif args.input_file:
-      print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api, injector))
-    elif args.input_directory:
-      print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api, injector))
-  except Exception as e:
-    print(f"{Fore.RED}{str(e)}{Fore.RESET}")
-    exit(1)
+  if args.server:
+    run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
+  elif args.input_file:
+    print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api, injector))
+  elif args.input_directory:
+    print(scan_torrent_directory(args.input_directory, args.output_directory, None, None, injector))
+
 
 
 def __verify_api_keys(config):
