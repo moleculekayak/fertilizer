@@ -14,7 +14,7 @@ def cli_entrypoint(args):
   try:
     # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
     should_print = args.input_directory or args.server
-    config = command_log_wrapper("Reading config file:", should_print, lambda: Config().load(args.config_file))
+    config = command_log_wrapper("Reading environment variables or config file:", should_print, lambda: Config().load(args.config_file))
 
     if config.inject_torrents:
       injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
