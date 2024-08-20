@@ -1,5 +1,6 @@
 import os
 import pytest
+from unittest import mock
 
 from .helpers import SetupTeardown
 
@@ -10,6 +11,13 @@ from src.errors import ConfigKeyError
 class TestConfig(SetupTeardown):
   def test_loads_config(self):
     config = Config().load("tests/support/config.json")
+
+    assert config.red_key == "red_key"
+    assert config.ops_key == "ops_key"
+
+  @mock.patch.dict(os.environ, {"RED_API_KEY": "red_key", "OPS_API_KEY": "ops_key"})
+  def test_loads_via_env_var(self):
+    config = Config().load("tests/support/badpath.json")
 
     assert config.red_key == "red_key"
     assert config.ops_key == "ops_key"
