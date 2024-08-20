@@ -19,7 +19,7 @@ def cli_entrypoint(args):
   else:
     injector = None
 
-  # red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
+  red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print, lambda: __verify_api_keys(config))
 
   if args.server:
     run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
