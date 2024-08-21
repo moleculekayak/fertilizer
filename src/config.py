@@ -15,15 +15,6 @@ class Config:
     if not self._config:
       raise FileNotFoundError("Configuration not found.")
 
-  @staticmethod
-  def boolify_string_option(value: str):
-    if not value:
-      return None
-    if value.lower().strip() == "true":
-      return True
-    if value.lower().strip() == "false":
-      return False
-
   @property
   def red_key(self) -> str:
     return self.__get_key("red_key")
