@@ -46,7 +46,7 @@ def __build_configuration(config_file: str):
   env_vars = {
     key: value
     for key, value in {
-      "inject_torrents": Config.boolify_string_option(os.getenv("INJECT_TORRENTS")),
+      "inject_torrents": True if os.getenv("INJECT_TORRENTS").lower().strip() == "true" else False,
       "injection_link_directory": os.getenv("INJECTION_LINK_DIRECTORY"),
       "deluge_rpc_url": os.getenv("DELUGE_RPC_URL"),
       "qbittorrent_url": os.getenv("QBITTORRENT_URL"),
