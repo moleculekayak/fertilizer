@@ -127,7 +127,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       captured = capsys.readouterr()
 
       assert (
-        f"{Fore.LIGHTGREEN_EX}Found with source 'OPS' and generated as '/tmp/output/OPS/foo [OPS].torrent'.{Fore.RESET}"
+        f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to OPS; succesfully generated as '/tmp/output/OPS/foo [OPS].torrent'.{Fore.RESET}"
         in captured.out
       )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
@@ -266,7 +266,7 @@ class TestScanTorrentDirectory(SetupTeardown):
       assert "Analyzed 3 local torrents" in captured.out
 
       assert (
-        f"{Fore.LIGHTGREEN_EX}Found with source 'RED' and generated as '/tmp/output/RED/foo [RED].torrent'.{Fore.RESET}"
+        f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to RED; succesfully generated as '/tmp/output/RED/foo [RED].torrent'.{Fore.RESET}"
         in captured.out
       )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
