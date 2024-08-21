@@ -55,6 +55,14 @@ def parse_args(args=None):
     default=False,
   )
 
+  options.add_argument(
+    "-v",
+    "--verbose",
+    action="store_true",
+    help="enables verbose output",
+    default=False,
+  )
+
   config.add_argument(
     "-c",
     "--config-file",
