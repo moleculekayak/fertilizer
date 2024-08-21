@@ -41,11 +41,7 @@ def __build_configuration(config_file: str):
   file_config = {}
   if os.path.exists(config_file):
     with open(config_file, "r", encoding="utf-8") as f:
-      file_config = json.loads(f.read())
-    if file_config.get("red_key") == "xxxxxxxxxx":
-      file_config.pop("red_key")
-    if file_config.get("ops_key") == "xxxxxxxxxx":
-      file_config.pop("ops_key")
+      file_config = {key: value for key, value in json.loads(f.read()).items() if value}
 
   env_vars = {
     key: value
