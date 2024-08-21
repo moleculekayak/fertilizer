@@ -138,7 +138,7 @@ def __get_bencoded_data_and_tracker(torrent_path):
   source_torrent_data = get_bencoded_data(torrent_path)
   fastresume_data = get_bencoded_data(fastresume_path)
 
-  if not source_torrent_data:
+  if not source_torrent_data or not source_torrent_data.get(b"info"):
     raise TorrentDecodingError("Error decoding torrent file")
 
   torrent_tracker = get_origin_tracker(source_torrent_data)
