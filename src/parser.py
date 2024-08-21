@@ -58,8 +58,7 @@ def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
 
 def calculate_infohash(torrent_data: dict) -> str:
   try:
-    torrent_info = torrent_data[b"info"]
-    return sha1(bencoder.encode(torrent_info)).hexdigest().upper()
+    return sha1(bencoder.encode(torrent_data[b"info"])).hexdigest().upper()
   except KeyError:
     raise TorrentDecodingError("Torrent data does not contain 'info' key")
 
