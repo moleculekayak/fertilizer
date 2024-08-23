@@ -121,7 +121,7 @@ def scan_torrent_directory(
           p.already_exists.print("Torrent was previously generated.")
       else:
         p.generated.print(
-          f"Found with source '{new_tracker.site_shortname()}' and generated as '{new_torrent_filepath}'."
+          f"Torrent can be cross-seeded to {new_tracker.site_shortname()}; succesfully generated as '{new_torrent_filepath}'."
         )
     except TorrentDecodingError as e:
       p.error.print(str(e))
@@ -155,7 +155,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except UnicodeDecodeError:
+    except Exception:
       continue
 
   return infohash_dict

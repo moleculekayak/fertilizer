@@ -1,6 +1,7 @@
 import sys
 import os
 import json
+import traceback
 from colorama import Fore
 
 from src.api import RedAPI, OpsAPI
@@ -33,6 +34,9 @@ def cli_entrypoint(args):
     elif args.input_directory:
       print(scan_torrent_directory(args.input_directory, args.output_directory, red_api, ops_api, injector))
   except Exception as e:
+    if args.verbose:
+      print(traceback.format_exc())
+
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
 
