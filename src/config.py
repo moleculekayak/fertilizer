@@ -1,3 +1,5 @@
+from urllib.parse import ParseResult
+from src.validation import ValidateConfigDict
 from .errors import ConfigKeyError
 
 
@@ -15,6 +17,9 @@ class Config:
     if not self._config:
       raise FileNotFoundError("Configuration not found.")
 
+    validate = ValidateConfigDict(self._config)
+    self._config = validate.validate()
+
   @property
   def red_key(self) -> str:
     return self.__get_key("red_key")
@@ -28,11 +33,11 @@ class Config:
     return self.__get_key("port", must_exist=False) or "9713"
 
   @property
-  def deluge_rpc_url(self) -> str | None:
+  def deluge_rpc_url(self) -> ParseResult | None:
     return self.__get_key("deluge_rpc_url", must_exist=False) or None
 
   @property
-  def qbittorrent_url(self) -> str | None:
+  def qbittorrent_url(self) -> ParseResult | None:
     return self.__get_key("qbittorrent_url", must_exist=False) or None
 
   @property

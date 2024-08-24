@@ -1,7 +1,4 @@
-import os
-from urllib.parse import urlparse, unquote
-
-from src.filesystem import sane_join
+from urllib.parse import urlparse, urljoin
 
 
 class TorrentClient:
@@ -17,18 +14,18 @@ class TorrentClient:
   def inject_torrent(self, *_args, **_kwargs):
     raise NotImplementedError
 
-  def _extract_credentials_from_url(self, url, base_path=None):
-    parsed_url = urlparse(url)
-    username = unquote(parsed_url.username) if parsed_url.username else ""
-    password = unquote(parsed_url.password) if parsed_url.password else ""
-    origin = f"{parsed_url.scheme}://{parsed_url.hostname}:{parsed_url.port}"
-
+  @staticmethod
+  def _extract_credentials_from_url(url, base_path=None):
+    url = urlparse(url)
+    username = url.username if url.username else ""
+    password = url.password if url.password else ""
+    origin = f"{url.scheme}://{url.hostname}{f":{url.port}" if url.port else ""}"
     if base_path is not None:
-      href = sane_join(origin, os.path.normpath(base_path))
+      href = urljoin(origin, base_path)
     else:
-      href = sane_join(origin, (parsed_url.path if parsed_url.path != "/" else ""))
-
-    return href, username, password
+      href = urljoin(origin, (url.path if url.path != "/" else ""))
+    print(href)
+    return url.geturl() if base_path is None else href, username, password
 
   def _determine_label(self, torrent_info):
     current_label = torrent_info.get("label")

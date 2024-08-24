@@ -87,7 +87,9 @@ class GazelleAPI:
     try:
       account_info = self.get_account_info()
     except AuthenticationError as e:
-      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=e, should_raise=True)
+      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=str(e),
+                   should_raise=True)
+      return None
 
     passkey = account_info["response"]["passkey"]
     return f"{self.tracker_url}/{passkey}/announce"

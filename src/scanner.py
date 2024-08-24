@@ -16,11 +16,11 @@ from .injection import Injection
 
 
 def scan_torrent_file(
-  source_torrent_path: str,
-  output_directory: str,
-  red_api: RedAPI,
-  ops_api: OpsAPI,
-  injector: Injection | None,
+    source_torrent_path: str,
+    output_directory: str,
+    red_api: RedAPI,
+    ops_api: OpsAPI,
+    injector: Injection | None,
 ) -> str:
   """
   Scans a single .torrent file and generates a new one using the tracker API.
@@ -62,11 +62,11 @@ def scan_torrent_file(
 
 
 def scan_torrent_directory(
-  input_directory: str,
-  output_directory: str,
-  red_api: RedAPI,
-  ops_api: OpsAPI,
-  injector: Injection | None,
+    input_directory: str,
+    output_directory: str,
+    red_api: RedAPI,
+    ops_api: OpsAPI,
+    injector: Injection | None,
 ) -> str:
   """
   Scans a directory for .torrent files and generates new ones using the tracker APIs.
@@ -116,12 +116,13 @@ def scan_torrent_directory(
 
       if was_previously_generated:
         if injector:
-          p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
+          p.already_exists.print(
+            "Torrent was previously generated but was injected into your torrent client.")
         else:
           p.already_exists.print("Torrent was previously generated.")
       else:
         p.generated.print(
-          f"Torrent can be cross-seeded to {new_tracker.site_shortname()}; succesfully generated as '{new_torrent_filepath}'."
+          f"Torrent can be cross-seeded to {new_tracker.site_shortname()}; successfully generated as '{new_torrent_filepath}'."
         )
     except TorrentDecodingError as e:
       p.error.print(str(e))
@@ -155,7 +156,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except Exception:
+    except TorrentDecodingError | KeyError:
       continue
 
   return infohash_dict

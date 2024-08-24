@@ -145,3 +145,4 @@ tests/support/files/example.torrent
 
 # Jetbrains
 .idea
+*.iml
