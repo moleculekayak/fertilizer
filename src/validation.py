@@ -3,6 +3,7 @@ from urllib.parse import urlparse
 
 from colorama import Fore
 
+from api import RedAPI, OpsAPI
 from .filesystem import assert_path_exists
 
 
@@ -60,6 +61,18 @@ class ValidateConfigDict:
 
   def should_set_torrent_client(self):
     return str(self.config_options.get("inject_torrents", False)).lower() == "true"
+
+  @staticmethod
+  def verify_api_keys(config):
+    red_api = RedAPI(config.red_key)
+    ops_api = OpsAPI(config.ops_key)
+
+    # This will perform a lookup with the API and raise if there was a failure.
+    # Also caches the announce URL for future use which is a nice bonus
+    red_api.announce_url
+    ops_api.announce_url
+
+    return red_api, ops_api
 
   @staticmethod
   def is_valid_qbit_url(url):

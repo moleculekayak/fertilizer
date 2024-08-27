@@ -1,3 +1,5 @@
+import json
+import os
 from urllib.parse import ParseResult
 
 from .errors import ConfigKeyError
@@ -19,6 +21,27 @@ class Config:
 
   def get_config(self):
     return self._config
+
+  def build_config(self, config_file: str):
+    file_config = {}
+    if os.path.exists(config_file):
+      with open(config_file, "r", encoding="utf-8") as f:
+        file_config = {key: str(value) for key, value in json.loads(f.read()).items() if value}
+
+    env_vars = {
+      key: value
+      for key, value in {
+        "inject_torrents": True if os.getenv("INJECT_TORRENTS", "").lower().strip() == "true" else False,
+        "injection_link_directory": os.getenv("INJECTION_LINK_DIRECTORY"),
+        "deluge_rpc_url": os.getenv("DELUGE_RPC_URL"),
+        "qbittorrent_url": os.getenv("QBITTORRENT_URL"),
+        "red_key": os.getenv("RED_KEY"),
+        "ops_key": os.getenv("OPS_KEY"),
+      }.items()
+      if value
+    }
+
+    self.load_config([env_vars, file_config])
 
   @property
   def red_key(self) -> str:
