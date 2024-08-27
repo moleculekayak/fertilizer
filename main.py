@@ -1,4 +1,3 @@
-import asyncio
 import json
 import os
 import sys
@@ -15,7 +14,7 @@ from src.validation import ValidateConfigDict
 from src.webserver import run_webserver
 
 
-async def cli_entrypoint(args):
+def cli_entrypoint(args):
   try:
     # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
     should_print = args.input_directory or args.server
@@ -23,7 +22,7 @@ async def cli_entrypoint(args):
 
     __build_configuration(config, args.config_file)
     validate = ValidateConfigDict(config.get_config())
-    config.load_config([await validate.validate()])
+    config.load_config([validate.validate()])
     command_log_wrapper(
       "Reading configuration:", should_print, lambda: config.get_config()
     )
@@ -106,7 +105,7 @@ if __name__ == "__main__":
   args = parse_args()
 
   try:
-    asyncio.run(cli_entrypoint(args))
+    cli_entrypoint(args)
   except KeyboardInterrupt:
     print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)

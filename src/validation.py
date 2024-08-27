@@ -19,15 +19,15 @@ class ValidateConfigDict:
       "injection_link_directory": assert_path_exists,
     }
 
-  async def validate(self):
-    validation_errors = await self.__validate_key_presence()
+  def validate(self):
+    validation_errors = self.__validate_key_presence()
     validated_values = self.__validate_attributes(validation_errors)
     if validation_errors:
       print(f"Reading configuration: {Fore.RED}Error{Fore.RESET}\n")
       raise ValueError(f"Validation errors: {validation_errors}")
     return validated_values
 
-  async def __validate_key_presence(self):
+  def __validate_key_presence(self):
     def is_tracker_keys_set():
       return sum(1 for key in self.config_options if "key" in key) == 2
 
