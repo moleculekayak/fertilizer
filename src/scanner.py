@@ -16,11 +16,11 @@ from .torrent import generate_new_torrent_from_file
 
 
 def scan_torrent_file(
-        source_torrent_path: str,
-        output_directory: str,
-        red_api: RedAPI,
-        ops_api: OpsAPI,
-        injector: Injection | None,
+  source_torrent_path: str,
+  output_directory: str,
+  red_api: RedAPI,
+  ops_api: OpsAPI,
+  injector: Injection | None,
 ) -> str:
   """
   Scans a single .torrent file and generates a new one using the tracker API.
@@ -62,11 +62,11 @@ def scan_torrent_file(
 
 
 def scan_torrent_directory(
-        input_directory: str,
-        output_directory: str,
-        red_api: RedAPI,
-        ops_api: OpsAPI,
-        injector: Injection | None,
+  input_directory: str,
+  output_directory: str,
+  red_api: RedAPI,
+  ops_api: OpsAPI,
+  injector: Injection | None,
 ) -> str:
   """
   Scans a directory for .torrent files and generates new ones using the tracker APIs.
@@ -116,8 +116,7 @@ def scan_torrent_directory(
 
       if was_previously_generated:
         if injector:
-          p.already_exists.print(
-            "Torrent was previously generated but was injected into your torrent client.")
+          p.already_exists.print("Torrent was previously generated but was injected into your torrent client.")
         else:
           p.already_exists.print("Torrent was previously generated.")
       else:

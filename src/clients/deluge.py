@@ -54,10 +54,10 @@ class Deluge(TorrentClient):
       raise TorrentClientError("Client returned unexpected response (object missing)")
 
     torrent_completed = (
-            (torrent["state"] == "Paused" and (torrent["progress"] == 100 or not torrent["total_remaining"]))
-            or torrent["state"] == "Seeding"
-            or torrent["progress"] == 100
-            or not torrent["total_remaining"]
+      (torrent["state"] == "Paused" and (torrent["progress"] == 100 or not torrent["total_remaining"]))
+      or torrent["state"] == "Seeding"
+      or torrent["progress"] == 100
+      or not torrent["total_remaining"]
     )
 
     return {
@@ -96,7 +96,6 @@ class Deluge(TorrentClient):
     return new_torrent_infohash
 
   def __authenticate(self):
-
     # This method specifically cannot use __wrap_request because an auth error would create an infinite loop
     auth_response = self.__request("auth.login", [self._password])
     if not auth_response:

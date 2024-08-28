@@ -32,7 +32,7 @@ class ValidateConfigDict:
     def is_tracker_keys_set():
       return sum(1 for key in self.config_options if "key" in key) == 2
 
-    is_client_url_set = any('url' in key for key in self.config_options.keys())
+    is_client_url_set = any("url" in key for key in self.config_options.keys())
 
     errors = {}
     if (self.should_set_torrent_client()) and not is_client_url_set:
@@ -44,7 +44,7 @@ class ValidateConfigDict:
       missing_keys = [key for key in ["red_key", "ops_key"] if key not in self.config_options]
       for key in missing_keys:
         if key in missing_keys:
-          errors[key] = f'{missing_error}'
+          errors[key] = f"{missing_error}"
 
     return errors
 

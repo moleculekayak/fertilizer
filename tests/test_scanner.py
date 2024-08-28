@@ -127,8 +127,8 @@ class TestScanTorrentDirectory(SetupTeardown):
       captured = capsys.readouterr()
 
       assert (
-          f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to OPS; succesfully generated as '/tmp/output/OPS/foo [OPS].torrent'.{Fore.RESET}"
-          in captured.out
+        f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to OPS; succesfully generated as '/tmp/output/OPS/foo [OPS].torrent'.{Fore.RESET}"
+        in captured.out
       )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
 
@@ -148,7 +148,7 @@ class TestScanTorrentDirectory(SetupTeardown):
     captured = capsys.readouterr()
 
     assert (
-        f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+      f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
     )
     assert f"{Fore.LIGHTBLACK_EX}Skipped{Fore.RESET}: 1" in captured.out
 
@@ -174,8 +174,8 @@ class TestScanTorrentDirectory(SetupTeardown):
     captured = capsys.readouterr()
 
     assert (
-        f"{Fore.LIGHTYELLOW_EX}Torrent already exists in input directory at /tmp/input/red_source.torrent{Fore.RESET}"
-        in captured.out
+      f"{Fore.LIGHTYELLOW_EX}Torrent already exists in input directory at /tmp/input/red_source.torrent{Fore.RESET}"
+      in captured.out
     )
 
     assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 2" in captured.out
@@ -201,8 +201,8 @@ class TestScanTorrentDirectory(SetupTeardown):
     captured = capsys.readouterr()
 
     assert (
-        f"{Fore.LIGHTYELLOW_EX}Torrent was previously generated but was injected into your torrent client.{Fore.RESET}"
-        in captured.out
+      f"{Fore.LIGHTYELLOW_EX}Torrent was previously generated but was injected into your torrent client.{Fore.RESET}"
+      in captured.out
     )
     assert f"{Fore.LIGHTYELLOW_EX}Already exists{Fore.RESET}: 1" in captured.out
     injector_mock.inject_torrent.assert_called_once_with(
@@ -266,13 +266,13 @@ class TestScanTorrentDirectory(SetupTeardown):
       assert "Analyzed 3 local torrents" in captured.out
 
       assert (
-          f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to RED; succesfully generated as '/tmp/output/RED/foo [RED].torrent'.{Fore.RESET}"
-          in captured.out
+        f"{Fore.LIGHTGREEN_EX}Torrent can be cross-seeded to RED; succesfully generated as '/tmp/output/RED/foo [RED].torrent'.{Fore.RESET}"
+        in captured.out
       )
       assert f"{Fore.LIGHTGREEN_EX}Generated for cross-seeding{Fore.RESET}: 1" in captured.out
 
       assert (
-          f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
+        f"{Fore.LIGHTBLACK_EX}Torrent not from OPS or RED based on source or announce URL{Fore.RESET}" in captured.out
       )
       assert f"{Fore.LIGHTBLACK_EX}Skipped{Fore.RESET}: 1" in captured.out
 

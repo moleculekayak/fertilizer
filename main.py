@@ -20,22 +20,19 @@ def cli_entrypoint(args):
     config.build_config(args.config_file)
     validate = ValidateConfigDict(config.get_config())
     config.load_config([validate.validate()])
-    command_log_wrapper(
-      "Reading configuration:", should_print, lambda: config.get_config()
-    )
+    command_log_wrapper("Reading configuration:", should_print, lambda: config.get_config())
 
     if config.inject_torrents:
-      injector = command_log_wrapper("Connecting to torrent client:", should_print,
-                                     lambda: Injection(config).setup())
+      injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
     else:
       injector = None
 
-    red_api, ops_api = command_log_wrapper("Verifying API keys:", should_print,
-                                           lambda: validate.verify_api_keys(config))
+    red_api, ops_api = command_log_wrapper(
+      "Verifying API keys:", should_print, lambda: validate.verify_api_keys(config)
+    )
 
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector,
-                    port=config.server_port)
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
     elif args.input_file:
       print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api, injector))
     elif args.input_directory:

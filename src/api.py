@@ -71,9 +71,12 @@ class GazelleAPI:
         except json.JSONDecodeError as e:
           err = "JSON decoding of response failed", e
 
-        handle_error(description=err[0], exception_details=err[1],
-                     wait_time=self._retry_wait_time(current_retries),
-                     extra_description=f" (attempt {current_retries}/{self._max_retries})", )
+        handle_error(
+          description=err[0],
+          exception_details=err[1],
+          wait_time=self._retry_wait_time(current_retries),
+          extra_description=f" (attempt {current_retries}/{self._max_retries})",
+        )
         current_retries += 1
       else:
         sleep(0.2)
@@ -84,8 +87,7 @@ class GazelleAPI:
     try:
       account_info = self.get_account_info()
     except AuthenticationError as e:
-      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=str(e),
-                   should_raise=True)
+      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=str(e), should_raise=True)
 
     passkey = account_info["response"]["passkey"]
     return f"{self.tracker_url}/{passkey}/announce"
@@ -93,15 +95,23 @@ class GazelleAPI:
 
 class OpsAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):
-    super().__init__(site_url="https://orpheus.network", tracker_url="https://home.opsfet.ch",
-                     auth_header={"Authorization": f"token {api_key}"}, rate_limit=delay_in_seconds, )
+    super().__init__(
+      site_url="https://orpheus.network",
+      tracker_url="https://home.opsfet.ch",
+      auth_header={"Authorization": f"token {api_key}"},
+      rate_limit=delay_in_seconds,
+    )
 
     self.sitename = "OPS"
 
 
 class RedAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):
-    super().__init__(site_url="https://redacted.ch", tracker_url="https://flacsfor.me",
-                     auth_header={"Authorization": api_key}, rate_limit=delay_in_seconds, )
+    super().__init__(
+      site_url="https://redacted.ch",
+      tracker_url="https://flacsfor.me",
+      auth_header={"Authorization": api_key},
+      rate_limit=delay_in_seconds,
+    )
 
     self.sitename = "RED"

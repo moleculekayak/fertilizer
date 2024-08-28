@@ -15,12 +15,12 @@ from .trackers import RedTracker, OpsTracker
 
 
 def generate_new_torrent_from_file(
-        source_torrent_path: str,
-        output_directory: str,
-        red_api: RedAPI,
-        ops_api: OpsAPI,
-        input_infohashes=None,
-        output_infohashes=None,
+  source_torrent_path: str,
+  output_directory: str,
+  red_api: RedAPI,
+  ops_api: OpsAPI,
+  input_infohashes=None,
+  output_infohashes=None,
 ) -> tuple[OpsTracker | RedTracker, str, bool]:
   """
   Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
@@ -108,10 +108,10 @@ def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) ->
 
 
 def __generate_torrent_output_filepath(
-        api_response: dict,
-        new_tracker: OpsTracker | RedTracker,
-        new_source: str,
-        output_directory: str,
+  api_response: dict,
+  new_tracker: OpsTracker | RedTracker,
+  new_source: str,
+  output_directory: str,
 ) -> str:
   tracker_name = new_tracker.site_shortname()
   source_name = f" [{new_source}]" if new_source else ""

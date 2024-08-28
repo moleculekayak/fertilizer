@@ -201,8 +201,7 @@ class TestGetTorrentInfo(SetupTeardown):
   def test_attempts_reauth_if_deluge_cookie_expired(self, api_url, deluge_client, torrent_info_response):
     with requests_mock.Mocker() as m:
       m.post(api_url, additional_matcher=torrent_info_matcher, json={"error": {"code": 1}})
-      m.post(api_url, additional_matcher=auth_matcher, json={"result": True},
-             headers={"Set-Cookie": "supersecret"})
+      m.post(api_url, additional_matcher=auth_matcher, json={"result": True}, headers={"Set-Cookie": "supersecret"})
       m.post(api_url, additional_matcher=connected_matcher, json={"result": True})
 
       deluge_client._deluge_cookie = None
@@ -292,8 +291,7 @@ class TestInjectTorrent(SetupTeardown):
       with pytest.raises(TorrentExistsInClientError) as excinfo:
         deluge_client.inject_torrent("foo", torrent_path, "/tmp/override/")
 
-      assert "New torrent already exists in client (f15a59b9620fbf4cb06407c10399607367d9204d)" in str(
-        excinfo.value)
+      assert "New torrent already exists in client (f15a59b9620fbf4cb06407c10399607367d9204d)" in str(excinfo.value)
 
   def test_raises_if_torrent_not_complete(self, api_url, deluge_client, torrent_info_response):
     torrent_info_response["state"] = "Paused"

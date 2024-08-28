@@ -24,8 +24,7 @@ def assert_path_exists(path: str) -> str:
 
 def list_files_of_extension(input_directory: str, extension: str = ".torrent") -> list[str]:
   return [
-    os.path.join(input_directory, filename) for filename in os.listdir(input_directory) if
-    filename.endswith(extension)
+    os.path.join(input_directory, filename) for filename in os.listdir(input_directory) if filename.endswith(extension)
   ]
 
 
