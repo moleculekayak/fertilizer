@@ -74,7 +74,6 @@ class ConfigValidator:
 
     return validation_errors, validated_values
 
-  # TODO: consider wrapping in grey color
   def __format_validation_errors(self, errors):
     return "\n".join([f'- "{key}": {value}' for key, value in errors.items()])
 

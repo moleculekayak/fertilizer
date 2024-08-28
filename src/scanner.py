@@ -155,7 +155,7 @@ def __collect_infohashes_from_files(files: list[str]) -> dict:
       if torrent_data:
         infohash = calculate_infohash(torrent_data)
         infohash_dict[infohash] = filepath
-    except TorrentDecodingError | KeyError:
+    except Exception:
       continue
 
   return infohash_dict

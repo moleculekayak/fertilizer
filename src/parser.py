@@ -78,7 +78,7 @@ def get_bencoded_data(filename: str) -> dict | None:
       data = bencoder.decode(f.read())
 
     return data
-  except ValueError | IOError | OSError:
+  except Exception:
     return None
 
 

@@ -25,7 +25,8 @@ class TorrentClient:
       href = urljoin(origin, base_path)
     else:
       href = urljoin(origin, (url.path if url.path != "/" else ""))
-    return (url.geturl() if base_path is None else href), username, password
+
+    return href, username, password
 
   def _determine_label(self, torrent_info):
     current_label = torrent_info.get("label")
