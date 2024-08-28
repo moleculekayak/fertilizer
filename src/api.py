@@ -4,7 +4,7 @@ from time import time, sleep
 
 import requests
 
-from errors import AuthenticationError, handle_error
+from .errors import AuthenticationError, handle_error
 
 
 class GazelleAPI:
