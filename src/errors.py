@@ -41,6 +41,7 @@ class TorrentAlreadyExistsError(Exception):
   pass
 
 
+# TODO: consider removing
 class ConfigKeyError(Exception):
   pass
 

@@ -1,3 +1,4 @@
+import os
 import sys
 import traceback
 
@@ -15,12 +16,9 @@ def cli_entrypoint(args):
   try:
     # using input_file means this is probably running as a script and extra printing wouldn't be appreciated
     should_print = args.input_directory or args.server
-    config = Config()
+    config, validator = __build_config_validator()
 
-    config.build_config(args.config_file)
-    validate = ValidateConfigDict(config.get_config())
-    config.load_config([validate.validate()])
-    command_log_wrapper("Reading configuration:", should_print, lambda: config.get_config())
+    command_log_wrapper("Reading configuration:", should_print, lambda: __read_and_load_config(config, validator))
 
     if config.inject_torrents:
       injector = command_log_wrapper("Connecting to torrent client:", should_print, lambda: Injection(config).setup())
@@ -28,7 +26,7 @@ def cli_entrypoint(args):
       injector = None
 
     red_api, ops_api = command_log_wrapper(
-      "Verifying API keys:", should_print, lambda: validate.verify_api_keys(config)
+      "Verifying API keys:", should_print, lambda: validator.verify_api_keys(config)
     )
 
     if args.server:
@@ -43,6 +41,22 @@ def cli_entrypoint(args):
 
     print(f"{Fore.RED}{str(e)}{Fore.RESET}")
     exit(1)
+
+
+def __build_config_validator(args):
+  config_dict = Config.build_config_dict(args.config_file, os.environ)
+
+  config.build_config(args.config_file)
+  validator = ValidateConfigDict(config.get_config())
+
+  return config, validator
+
+
+def __read_and_load_config(config, validator):
+  validated_config_dict = validator.validate()
+  config.load_config(validated_config_dict)
+
+  return config.get_config()
 
 
 def command_log_wrapper(label, should_print, func):
