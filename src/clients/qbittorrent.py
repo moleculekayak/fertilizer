@@ -1,19 +1,18 @@
 import json
-from pathlib import Path
-from urllib.parse import urljoin
-
 import requests
+from pathlib import Path
 from requests.structures import CaseInsensitiveDict
 
-from .torrent_client import TorrentClient
-from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from ..filesystem import sane_join
 from ..parser import get_bencoded_data, calculate_infohash
+from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from .torrent_client import TorrentClient
 
 
 class Qbittorrent(TorrentClient):
   def __init__(self, qbit_url):
     super().__init__()
-    self._href, self._username, self._password = self._extract_credentials_from_url(qbit_url, "/api/v2")
+    self._qbit_url_parts = self._extract_credentials_from_url(qbit_url, "/api/v2")
     self._qbit_cookie = None
 
   def setup(self):
@@ -63,15 +62,17 @@ class Qbittorrent(TorrentClient):
     return new_torrent_infohash
 
   def __authenticate(self):
+    href, username, password = self._qbit_url_parts
+
     try:
-      if self._username or self._password:
-        payload = {"username": self._username, "password": self._password}
+      if username or password:
+        payload = {"username": username, "password": password}
       else:
         payload = {}
 
       # This method specifically does not use the __wrap_request method
       # because we want to avoid an infinite loop of re-authenticating
-      response = requests.post(f"{self._href}/auth/login", data=payload)
+      response = requests.post(f"{href}/auth/login", data=payload)
       response.raise_for_status()
     except requests.RequestException as e:
       raise TorrentClientAuthenticationError(f"qBittorrent login failed: {e}")
@@ -88,9 +89,11 @@ class Qbittorrent(TorrentClient):
       return self.__request(path, data, files)
 
   def __request(self, path, data=None, files=None):
+    href, _username, _password = self._qbit_url_parts
+
     try:
       response = requests.post(
-        urljoin(self._href, path),
+        sane_join(href, path),
         headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
         data=data,
         files=files,

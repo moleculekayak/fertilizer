@@ -21,7 +21,6 @@ class ConfigValidator:
       "injection_link_directory": assert_path_exists,
     }
 
-  # TODO: test
   @staticmethod
   def verify_api_keys(config):
     red_api = RedAPI(config.red_key)

@@ -1,15 +1,14 @@
-import base64
 import json
+import base64
+import requests
 from pathlib import Path
 
-import requests
-from requests.exceptions import RequestException
-from requests.structures import CaseInsensitiveDict
-
-from .torrent_client import TorrentClient
-from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from ..filesystem import sane_join
 from ..parser import get_bencoded_data, calculate_infohash
+from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from .torrent_client import TorrentClient
+from requests.exceptions import RequestException
+from requests.structures import CaseInsensitiveDict
 
 
 class Deluge(TorrentClient):
@@ -19,7 +18,7 @@ class Deluge(TorrentClient):
 
   def __init__(self, rpc_url):
     super().__init__()
-    self._href, self._username_, self._password = self._extract_credentials_from_url(rpc_url)
+    self._rpc_url = rpc_url
     self._deluge_cookie = None
     self._deluge_request_id = 0
     self._label_plugin_enabled = False
@@ -96,8 +95,12 @@ class Deluge(TorrentClient):
     return new_torrent_infohash
 
   def __authenticate(self):
+    _href, _username, password = self._extract_credentials_from_url(self._rpc_url)
+    if not password:
+      raise Exception("You need to define a password in the Deluge RPC URL. (e.g. http://:<PASSWORD>@localhost:8112)")
+
     # This method specifically cannot use __wrap_request because an auth error would create an infinite loop
-    auth_response = self.__request("auth.login", [self._password])
+    auth_response = self.__request("auth.login", [password])
     if not auth_response:
       raise TorrentClientError("Reached Deluge RPC endpoint but failed to authenticate")
 
@@ -118,18 +121,16 @@ class Deluge(TorrentClient):
 
     return self.__wrap_request("label.set_torrent", [infohash, label])
 
-  def __wrap_request(self, method, params=None):
-    if params is None:
-      params = []
+  def __wrap_request(self, method, params=[]):
     try:
       return self.__request(method, params)
     except TorrentClientAuthenticationError:
       self.__authenticate()
       return self.__request(method, params)
 
-  def __request(self, method, params=None):
-    if params is None:
-      params = []
+  def __request(self, method, params=[]):
+    href, _, _ = self._extract_credentials_from_url(self._rpc_url)
+
     headers = CaseInsensitiveDict()
     headers["Content-Type"] = "application/json"
     if self._deluge_cookie:
@@ -137,7 +138,7 @@ class Deluge(TorrentClient):
 
     try:
       response = requests.post(
-        self._href,
+        href,
         json={
           "method": method,
           "params": params,
@@ -150,7 +151,7 @@ class Deluge(TorrentClient):
     except RequestException as network_error:
       if network_error.response and network_error.response.status_code == 408:
         raise TorrentClientError(f"Deluge method {method} timed out after 10 seconds")
-      raise TorrentClientError(f"Failed to connect to Deluge at {self._href}") from network_error
+      raise TorrentClientError(f"Failed to connect to Deluge at {href}") from network_error
 
     try:
       json_response = response.json()
