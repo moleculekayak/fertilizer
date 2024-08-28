@@ -1,7 +1,6 @@
 import re
 from urllib.parse import urlparse
 
-
 from .api import RedAPI, OpsAPI
 from .filesystem import assert_path_exists
 
@@ -40,7 +39,7 @@ class ConfigValidator:
     validation_errors, validated_values = self.__validate_attributes(presence_errors)
 
     if validation_errors:
-      raise ValueError(f"Validation errors: \n{self.__format_validation_errors(validation_errors)}")
+      raise ValueError(self.__format_validation_errors(validation_errors))
     return validated_values
 
   def __validate_key_presence(self):
