@@ -1,10 +1,10 @@
 import os
 import shutil
 
-from .errors import TorrentInjectionError
 from .clients.deluge import Deluge
 from .clients.qbittorrent import Qbittorrent
 from .config import Config
+from .errors import TorrentInjectionError
 from .parser import calculate_infohash, get_bencoded_data
 
 
@@ -31,7 +31,8 @@ class Injection:
       save_path_override=output_parent_directory,
     )
 
-  def __validate_config(self, config: Config):
+  @staticmethod
+  def __validate_config(config: Config):
     if not config.inject_torrents:
       raise TorrentInjectionError("Torrent injection is disabled in the config file.")
 
@@ -43,7 +44,8 @@ class Injection:
 
     return config
 
-  def __determine_torrent_client(self, config: Config):
+  @staticmethod
+  def __determine_torrent_client(config: Config):
     if config.deluge_rpc_url:
       return Deluge(config.deluge_rpc_url)
     elif config.qbittorrent_url:
@@ -64,7 +66,7 @@ class Injection:
     # torrents are stored under that directory.
     #
     # If a torrent has one file and that file is at the root level of the torrent, the `files` key is absent.
-    # If a torrent has multiple files OR a single file but it's in a directory, the `files` key is present
+    # If a torrent has multiple files OR a single file, but it's in a directory, the `files` key is present
     # and is an array of dictionaries. Each dictionary has a `path` key that is an array of bytestrings where
     # each array member is a part of the path to the file. In other words, if you joined all the bytestrings
     # in the `path` array for a given file, you'd get the path to the file relative to the topmost parent
@@ -88,7 +90,8 @@ class Injection:
 
     return os.path.join(tracker_output_directory, os.path.basename(source_torrent_file_or_dir))
 
-  def __link_files_to_output_location(self, source_torrent_file_or_dir, output_location):
+  @staticmethod
+  def __link_files_to_output_location(source_torrent_file_or_dir, output_location):
     if os.path.exists(output_location):
       raise TorrentInjectionError(f"Cannot link given torrent since it's already been linked: {output_location}")
 

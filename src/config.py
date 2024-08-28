@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import ParseResult
 
 from .errors import ConfigKeyError
 
@@ -10,16 +11,37 @@ class Config:
   """
 
   def __init__(self):
-    self._json = {}
+    self._config = {}
 
-  def load(self, config_filepath: str):
-    if not os.path.exists(config_filepath):
-      raise FileNotFoundError(f"{config_filepath} does not exist.")
+  def load_config(self, configs: list[dict[str, str | bool | ParseResult]]):
+    for config in configs:
+      self._config |= config
+    if not self._config:
+      raise FileNotFoundError("Configuration not found.")
 
-    with open(config_filepath, "r", encoding="utf-8") as f:
-      self._json = json.loads(f.read())
+  def get_config(self):
+    return self._config
 
-    return self
+  def build_config(self, config_file: str):
+    file_config = {}
+    if os.path.exists(config_file):
+      with open(config_file, "r", encoding="utf-8") as f:
+        file_config = {key: str(value) for key, value in json.loads(f.read()).items() if value}
+
+    env_vars = {
+      key: value
+      for key, value in {
+        "inject_torrents": True if os.getenv("INJECT_TORRENTS", "").lower().strip() == "true" else False,
+        "injection_link_directory": os.getenv("INJECTION_LINK_DIRECTORY"),
+        "deluge_rpc_url": os.getenv("DELUGE_RPC_URL"),
+        "qbittorrent_url": os.getenv("QBITTORRENT_URL"),
+        "red_key": os.getenv("RED_KEY"),
+        "ops_key": os.getenv("OPS_KEY"),
+      }.items()
+      if value
+    }
+
+    self.load_config([env_vars, file_config])
 
   @property
   def red_key(self) -> str:
@@ -34,11 +56,11 @@ class Config:
     return self.__get_key("port", must_exist=False) or "9713"
 
   @property
-  def deluge_rpc_url(self) -> str | None:
+  def deluge_rpc_url(self) -> ParseResult | None:
     return self.__get_key("deluge_rpc_url", must_exist=False) or None
 
   @property
-  def qbittorrent_url(self) -> str | None:
+  def qbittorrent_url(self) -> ParseResult | None:
     return self.__get_key("qbittorrent_url", must_exist=False) or None
 
   @property
@@ -51,7 +73,7 @@ class Config:
 
   def __get_key(self, key, must_exist=True):
     try:
-      return self._json[key]
+      return self._config[key]
     except KeyError:
       if must_exist:
         raise ConfigKeyError(f"Key '{key}' not found in config file.")

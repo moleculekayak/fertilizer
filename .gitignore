@@ -142,3 +142,7 @@ tmp/
 !tests/support/files/*.torrent
 !tests/support/files/*.fastresume
 tests/support/files/example.torrent
+
+# Jetbrains
+.idea
+*.iml

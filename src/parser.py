@@ -1,11 +1,13 @@
-import os
 import copy
-import bencoder
+import os
 from hashlib import sha1
+from typing import Type
 
-from .utils import flatten
-from .trackers import RedTracker, OpsTracker
+import bencoder
+
 from .errors import TorrentDecodingError
+from .trackers import RedTracker, OpsTracker
+from .utils import flatten
 
 
 def is_valid_infohash(infohash: str) -> bool:
@@ -43,7 +45,7 @@ def get_announce_url(torrent_data: dict) -> list[bytes] | None:
   return None
 
 
-def get_origin_tracker(torrent_data: dict) -> RedTracker | OpsTracker | None:
+def get_origin_tracker(torrent_data: dict) -> Type[RedTracker] | Type[OpsTracker] | None:
   source = get_source(torrent_data) or b""
   announce_url = get_announce_url(torrent_data) or []
 
@@ -70,13 +72,13 @@ def recalculate_hash_for_new_source(torrent_data: dict, new_source: (bytes | str
   return calculate_infohash(torrent_data)
 
 
-def get_bencoded_data(filename: str) -> dict:
+def get_bencoded_data(filename: str) -> dict | None:
   try:
     with open(filename, "rb") as f:
       data = bencoder.decode(f.read())
 
     return data
-  except Exception:
+  except ValueError | IOError | OSError:
     return None
 
 

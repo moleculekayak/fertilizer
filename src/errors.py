@@ -4,11 +4,11 @@ from colorama import Fore
 
 
 def handle_error(
-  description: str,
-  exception_details: (str | None) = None,
-  wait_time: int = 0,
-  extra_description: str = "",
-  should_raise: bool = False,
+        description: str,
+        exception_details: (str | None) = None,
+        wait_time: int = 0,
+        extra_description: str = "",
+        should_raise: bool = False,
 ) -> None:
   action = "" if should_raise else "Retrying"
   action += f" in {wait_time} seconds..." if wait_time else ""
