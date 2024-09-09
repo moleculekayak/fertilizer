@@ -1,43 +1,49 @@
-import os
-import pytest
-
 from .helpers import SetupTeardown
 
 from src.config import Config
-from src.errors import ConfigKeyError
 
 
 class TestConfig(SetupTeardown):
   def test_loads_config(self):
-    config = Config().load("tests/support/config.json")
+    config = Config({"red_key": "red_key", "ops_key": "ops_key"})
 
     assert config.red_key == "red_key"
     assert config.ops_key == "ops_key"
 
-  def test_raises_error_on_missing_config_file(self):
-    with pytest.raises(FileNotFoundError) as excinfo:
-      Config().load("tests/support/missing.json")
-
-    assert "tests/support/missing.json does not exist" in str(excinfo.value)
-
-  def test_raises_error_on_missing_key_without_default(self):
-    with open("/tmp/empty.json", "w") as f:
-      f.write("{}")
-
-    config = Config().load("/tmp/empty.json")
-
-    with pytest.raises(ConfigKeyError) as excinfo:
-      config.red_key
-
-    assert "Key 'red_key' not found in config file." in str(excinfo.value)
-    os.remove("/tmp/empty.json")
-
   def test_returns_default_value_if_present(self):
-    with open("/tmp/empty.json", "w") as f:
-      f.write("{}")
+    assert Config({}).server_port == "9713"
 
-    config = Config().load("/tmp/empty.json")
 
-    assert config.server_port == "9713"
+class TestBuildFromSources(SetupTeardown):
+  def test_builds_from_config_file(self):
+    config_dict = Config.build_config_dict("tests/support/config.json", {})
 
-    os.remove("/tmp/empty.json")
+    assert config_dict["red_key"] == "red_key"
+    assert config_dict["ops_key"] == "ops_key"
+
+  def test_builds_from_env_vars(self):
+    config_dict = Config.build_config_dict(
+      "",
+      {
+        "RED_KEY": "red_key",
+        "OPS_KEY": "ops_key",
+        "PORT": "1234",
+        "DELUGE_RPC_URL": "http://deluge:8112",
+        "QBITTORRENT_URL": "http://qbittorrent:8080",
+        "INJECT_TORRENTS": "true",
+        "INJECTION_LINK_DIRECTORY": "/my/cool/dir",
+      },
+    )
+
+    assert config_dict["red_key"] == "red_key"
+    assert config_dict["ops_key"] == "ops_key"
+    assert config_dict["port"] == "1234"
+    assert config_dict["deluge_rpc_url"] == "http://deluge:8112"
+    assert config_dict["qbittorrent_url"] == "http://qbittorrent:8080"
+    assert config_dict["inject_torrents"]
+    assert config_dict["injection_link_directory"] == "/my/cool/dir"
+
+  def test_config_file_takes_precedence_over_env(self):
+    config_dict = Config.build_config_dict("tests/support/config.json", {"RED_KEY": "env_red_key"})
+
+    assert config_dict["red_key"] == "red_key"

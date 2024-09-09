@@ -1,9 +1,8 @@
-import os
 import copy
+import os
 from html import unescape
 
 from .api import RedAPI, OpsAPI
-from .trackers import RedTracker, OpsTracker
 from .errors import TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError, TorrentAlreadyExistsError
 from .filesystem import replace_extension
 from .parser import (
@@ -12,6 +11,7 @@ from .parser import (
   recalculate_hash_for_new_source,
   save_bencoded_data,
 )
+from .trackers import RedTracker, OpsTracker
 
 
 def generate_new_torrent_from_file(
@@ -19,9 +19,9 @@ def generate_new_torrent_from_file(
   output_directory: str,
   red_api: RedAPI,
   ops_api: OpsAPI,
-  input_infohashes: dict = {},
-  output_infohashes: dict = {},
-) -> tuple[OpsTracker | RedTracker, str]:
+  input_infohashes=None,
+  output_infohashes=None,
+) -> tuple[OpsTracker | RedTracker, str, bool]:
   """
   Generates a new torrent file for the reciprocal tracker of the original torrent file if it exists on the reciprocal tracker.
 
@@ -43,6 +43,10 @@ def generate_new_torrent_from_file(
     `Exception`: if an unknown error occurs.
   """
 
+  if output_infohashes is None:
+    output_infohashes = {}
+  if input_infohashes is None:
+    input_infohashes = {}
   source_torrent_data, source_tracker = __get_bencoded_data_and_tracker(source_torrent_path)
   new_torrent_data = copy.deepcopy(source_torrent_data)
   new_tracker = source_tracker.reciprocal_tracker()
@@ -58,7 +62,7 @@ def generate_new_torrent_from_file(
       f"Torrent already exists in input directory at {input_infohashes[found_input_hash]}"
     )
   if found_output_hash:
-    return (new_tracker, output_infohashes[found_output_hash], True)
+    return new_tracker, output_infohashes[found_output_hash], True
 
   for new_source in new_tracker.source_flags_for_creation():
     new_hash = recalculate_hash_for_new_source(source_torrent_data, new_source)
@@ -73,7 +77,7 @@ def generate_new_torrent_from_file(
       )
 
       if os.path.exists(new_torrent_filepath):
-        return (new_tracker, new_torrent_filepath, True)
+        return new_tracker, new_torrent_filepath, True
 
       if new_torrent_filepath:
         torrent_id = __get_torrent_id(stored_api_response)
@@ -83,7 +87,7 @@ def generate_new_torrent_from_file(
         new_torrent_data[b"comment"] = __generate_torrent_url(new_tracker_api.site_url, torrent_id).encode()
         save_bencoded_data(new_torrent_filepath, new_torrent_data)
 
-        return (new_tracker, new_torrent_filepath, False)
+        return new_tracker, new_torrent_filepath, False
 
   if stored_api_response["error"] in ("bad hash parameter", "bad parameters"):
     raise TorrentNotFoundError(f"Torrent could not be found on {new_tracker.site_shortname()}")
@@ -95,7 +99,7 @@ def __calculate_all_possible_hashes(source_torrent_data: dict, sources: list[str
   return [recalculate_hash_for_new_source(source_torrent_data, source) for source in sources]
 
 
-def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) -> str:
+def __check_matching_hashes(all_possible_hashes: list[str], infohashes: dict) -> str | None:
   for hash in all_possible_hashes:
     if hash in infohashes:
       return hash

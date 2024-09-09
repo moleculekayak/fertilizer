@@ -1,10 +1,11 @@
-import os
 import logging
+import os
+
 from flask import Flask, request
 
+from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 from src.parser import is_valid_infohash
 from src.scanner import scan_torrent_file
-from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
 
 app = Flask(__name__)
 

@@ -1,10 +1,6 @@
 import os
 
 from .api import RedAPI, OpsAPI
-from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
-from .progress import Progress
-from .torrent import generate_new_torrent_from_file
-from .parser import get_bencoded_data, calculate_infohash
 from .errors import (
   TorrentDecodingError,
   UnknownTrackerError,
@@ -12,7 +8,11 @@ from .errors import (
   TorrentAlreadyExistsError,
   TorrentExistsInClientError,
 )
+from .filesystem import mkdir_p, list_files_of_extension, assert_path_exists
 from .injection import Injection
+from .parser import get_bencoded_data, calculate_infohash
+from .progress import Progress
+from .torrent import generate_new_torrent_from_file
 
 
 def scan_torrent_file(
@@ -121,7 +121,7 @@ def scan_torrent_directory(
           p.already_exists.print("Torrent was previously generated.")
       else:
         p.generated.print(
-          f"Torrent can be cross-seeded to {new_tracker.site_shortname()}; succesfully generated as '{new_torrent_filepath}'."
+          f"Torrent can be cross-seeded to {new_tracker.site_shortname()}; successfully generated as '{new_torrent_filepath}'."
         )
     except TorrentDecodingError as e:
       p.error.print(str(e))

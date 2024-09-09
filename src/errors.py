@@ -41,10 +41,6 @@ class TorrentAlreadyExistsError(Exception):
   pass
 
 
-class ConfigKeyError(Exception):
-  pass
-
-
 class TorrentClientError(Exception):
   pass
 

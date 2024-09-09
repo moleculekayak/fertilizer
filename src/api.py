@@ -1,10 +1,10 @@
+import json
 from math import exp
 from time import time, sleep
-import json
 
 import requests
 
-from .errors import handle_error, AuthenticationError
+from .errors import AuthenticationError, handle_error
 
 
 class GazelleAPI:
@@ -87,7 +87,7 @@ class GazelleAPI:
     try:
       account_info = self.get_account_info()
     except AuthenticationError as e:
-      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=e, should_raise=True)
+      handle_error(description=f"Authentication to {self.sitename} failed", exception_details=str(e), should_raise=True)
 
     passkey = account_info["response"]["passkey"]
     return f"{self.tracker_url}/{passkey}/announce"
