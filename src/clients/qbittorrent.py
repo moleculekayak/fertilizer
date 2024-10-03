@@ -3,7 +3,7 @@ import requests
 from pathlib import Path
 from requests.structures import CaseInsensitiveDict
 
-from ..filesystem import sane_join
+from ..utils import url_join
 from ..parser import get_bencoded_data, calculate_infohash
 from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from .torrent_client import TorrentClient
@@ -93,7 +93,7 @@ class Qbittorrent(TorrentClient):
 
     try:
       response = requests.post(
-        sane_join(href, path),
+        url_join(href, path),
         headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
         data=data,
         files=files,
