@@ -26,6 +26,23 @@ def torrent_info_response():
   }
 
 
+class TestInit(SetupTeardown):
+  def test_initializes_with_url_parts(self):
+    qbit_client = Qbittorrent("http://admin:supersecret@localhost:8080")
+
+    assert qbit_client._qbit_url_parts == ("http://localhost:8080/api/v2", "admin", "supersecret")
+
+  def test_initializes_with_no_auth(self):
+    qbit_client = Qbittorrent("http://localhost:8080")
+
+    assert qbit_client._qbit_url_parts == ("http://localhost:8080/api/v2", "", "")
+
+  def test_initializes_with_no_port(self):
+    qbit_client = Qbittorrent("http://admin:supersecret@localhost")
+
+    assert qbit_client._qbit_url_parts == ("http://localhost/api/v2", "admin", "supersecret")
+
+
 class TestSetup(SetupTeardown):
   def test_sets_auth_cookie(self, qbit_client):
     assert qbit_client._qbit_cookie is None
