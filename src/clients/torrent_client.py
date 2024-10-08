@@ -21,7 +21,8 @@ class TorrentClient:
     parsed_url = urlparse(url)
     username = unquote(parsed_url.username) if parsed_url.username else ""
     password = unquote(parsed_url.password) if parsed_url.password else ""
-    origin = f"{parsed_url.scheme}://{parsed_url.hostname}:{parsed_url.port}"
+    host = f"{parsed_url.hostname}{(':' + str(parsed_url.port)) if parsed_url.port else ''}"
+    origin = f"{parsed_url.scheme}://{host}"
 
     if base_path is not None:
       href = url_join(origin, os.path.normpath(base_path))
