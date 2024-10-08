@@ -25,7 +25,7 @@ class TorrentClient:
     origin = f"{parsed_url.scheme}://{host}"
 
     if base_path is not None:
-      href = url_join(origin, os.path.normpath(base_path))
+      href = url_join(origin, base_path)
     else:
       href = url_join(origin, parsed_url.path)
 
