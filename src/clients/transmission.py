@@ -13,6 +13,7 @@ from ..parser import get_bencoded_data, calculate_infohash
 from ..errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
 from .torrent_client import TorrentClient
 
+
 class StatusEnum(Enum):
   STOPPED = 0
   QUEUED_VERIFY = 1
@@ -22,8 +23,9 @@ class StatusEnum(Enum):
   QUEUED_SEED = 5
   SEEDING = 6
 
+
 class TransmissionBt(TorrentClient):
-  X_TRANSMISSION_SESSION_ID = 'X-Transmission-Session-Id'
+  X_TRANSMISSION_SESSION_ID = "X-Transmission-Session-Id"
 
   def __init__(self, rpc_url):
     super().__init__()
@@ -37,22 +39,25 @@ class TransmissionBt(TorrentClient):
     return self
 
   def get_torrent_info(self, infohash):
-    response = self.__wrap_request("torrent-get", arguments={
-      "fields": ["labels", "downloadDir", "percentDone", "status", "doneDate", "name"],
-      "ids": [infohash]
-    })
+    response = self.__wrap_request(
+      "torrent-get",
+      arguments={"fields": ["labels", "downloadDir", "percentDone", "status", "doneDate", "name"], "ids": [infohash]},
+    )
 
     if response:
       try:
         parsed_response = json.loads(response)
       except json.JSONDecodeError as json_parse_error:
-        raise TorrentClientError(f"Client returned malformed json response") from json_parse_error
+        raise TorrentClientError("Client returned malformed json response") from json_parse_error
 
       if not parsed_response.get("arguments", {}).get("torrents", []):
         raise TorrentClientError(f"Torrent not found in client ({infohash})")
 
-      torrent = parsed_response['arguments']['torrents'][0]
-      torrent_completed = (torrent["percentDone"] == 1.0 or torrent["doneDate"] > 0) and torrent["status"] in [StatusEnum.SEEDING.value, StatusEnum.QUEUED_SEED.value]
+      torrent = parsed_response["arguments"]["torrents"][0]
+      torrent_completed = (torrent["percentDone"] == 1.0 or torrent["doneDate"] > 0) and torrent["status"] in [
+        StatusEnum.SEEDING.value,
+        StatusEnum.QUEUED_SEED.value,
+      ]
 
       return {
         "complete": torrent_completed,
@@ -74,11 +79,14 @@ class TransmissionBt(TorrentClient):
     if new_torrent_already_exists:
       raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
 
-    self.__wrap_request("torrent-add", arguments={
-      "download-dir": save_path_override if save_path_override else source_torrent_info["save_path"],
-      "metainfo": base64.b64encode(open(new_torrent_filepath, "rb").read()).decode("utf-8"),
-      "labels": source_torrent_info['label']
-    })
+    self.__wrap_request(
+      "torrent-add",
+      arguments={
+        "download-dir": save_path_override if save_path_override else source_torrent_info["save_path"],
+        "metainfo": base64.b64encode(open(new_torrent_filepath, "rb").read()).decode("utf-8"),
+        "labels": source_torrent_info["label"],
+      },
+    )
 
     return new_torrent_infohash
 
@@ -110,10 +118,7 @@ class TransmissionBt(TorrentClient):
         self._base_url,
         auth=self._basic_auth,
         headers=CaseInsensitiveDict({self.X_TRANSMISSION_SESSION_ID: self._transmission_session_id}),
-        json={
-          "method": method,
-          "arguments": arguments
-        },
+        json={"method": method, "arguments": arguments},
         files=files,
       )
 
