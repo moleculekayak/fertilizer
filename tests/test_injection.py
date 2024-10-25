@@ -7,6 +7,7 @@ from .helpers import get_torrent_path, get_support_file_path, copy_and_mkdir, Se
 
 from src.clients.deluge import Deluge
 from src.clients.qbittorrent import Qbittorrent
+from src.clients.transmission import TransmissionBt
 from src.errors import TorrentInjectionError
 from src.injection import Injection
 
@@ -16,6 +17,7 @@ class ConfigMock:
     self.inject_torrents = True
     self.injection_link_directory = "/tmp/injection"
     self.deluge_rpc_url = "http://:pass@localhost:8112/json"
+    self.transmission_rpc_url = "http://:pass@localhost:51413/transmission/rpc"
     self.qbittorrent_url = "http://localhost:8080"
 
 
@@ -49,6 +51,7 @@ class TestInjection(SetupTeardown):
     config = ConfigMock()
     config.deluge_rpc_url = None
     config.qbittorrent_url = None
+    config.transmission_rpc_url = None
 
     with pytest.raises(TorrentInjectionError) as excinfo:
       Injection(config)
@@ -56,14 +59,22 @@ class TestInjection(SetupTeardown):
     assert str(excinfo.value) == "No torrent client configuration specified in the config file."
 
   def test_determines_torrent_client(self):
+    # NOTE: I probably should refactor this
     deluge_config = ConfigMock()
     deluge_config.qbittorrent_url = None
+    deluge_config.transmission_rpc_url = None
 
     qbit_config = ConfigMock()
     qbit_config.deluge_rpc_url = None
+    qbit_config.transmission_rpc_url = None
+
+    transmission_config = ConfigMock()
+    transmission_config.deluge_rpc_url = None
+    transmission_config.qbittorrent_url = None
 
     assert isinstance(Injection(deluge_config).client, Deluge)
     assert isinstance(Injection(qbit_config).client, Qbittorrent)
+    assert isinstance(Injection(transmission_config).client, TransmissionBt)
 
 
 class TestSetup(SetupTeardown):

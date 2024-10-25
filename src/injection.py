@@ -3,6 +3,7 @@ import shutil
 
 from .clients.deluge import Deluge
 from .clients.qbittorrent import Qbittorrent
+from .clients.transmission import TransmissionBt
 from .config import Config
 from .errors import TorrentInjectionError
 from .parser import calculate_infohash, get_bencoded_data
@@ -39,7 +40,7 @@ class Injection:
     if not config.injection_link_directory:
       raise TorrentInjectionError("No injection link directory specified in the config file.")
 
-    if (not config.deluge_rpc_url) and (not config.qbittorrent_url):
+    if (not config.deluge_rpc_url) and (not config.transmission_rpc_url) and (not config.qbittorrent_url):
       raise TorrentInjectionError("No torrent client configuration specified in the config file.")
 
     return config
@@ -48,6 +49,8 @@ class Injection:
   def __determine_torrent_client(config: Config):
     if config.deluge_rpc_url:
       return Deluge(config.deluge_rpc_url)
+    elif config.transmission_rpc_url:
+      return TransmissionBt(config.transmission_rpc_url)
     elif config.qbittorrent_url:
       return Qbittorrent(config.qbittorrent_url)
 
