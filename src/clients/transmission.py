@@ -95,8 +95,10 @@ class TransmissionBt(TorrentClient):
       # This method specifically does not use the __wrap_request method
       # because we want to avoid an infinite loop of re-authenticating
       response = requests.post(self._base_url, auth=self._basic_auth)
+      # TransmissionBt returns a 409 status code if the session id is invalid
+      # (which it is on your first request) and includes a new session id in the response headers.
       if response.status_code == HTTPStatus.CONFLICT:
-        self._transmission_session_id = response.headers[self.X_TRANSMISSION_SESSION_ID]
+        self._transmission_session_id = response.headers.get(self.X_TRANSMISSION_SESSION_ID)
       else:
         response.raise_for_status()
     except requests.RequestException as e:
@@ -126,8 +128,7 @@ class TransmissionBt(TorrentClient):
 
       return response.text
     except requests.RequestException as e:
-      if e.response.status_code == 409:
-        print(e.response.text)
+      if e.response.status_code == HTTPStatus.CONFLICT:
         raise TorrentClientAuthenticationError("Failed to authenticate with TransmissionBt")
 
       raise TorrentClientError(f"TransmissionBt request to '{self._base_url}' for method '{method}' failed: {e}")
