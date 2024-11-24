@@ -108,7 +108,7 @@ class OpsAPI(GazelleAPI):
 class RedAPI(GazelleAPI):
   def __init__(self, api_key, delay_in_seconds=2):
     super().__init__(
-      site_url="https://redacted.ch",
+      site_url="https://redacted.sh",
       tracker_url="https://flacsfor.me",
       auth_header={"Authorization": api_key},
       rate_limit=delay_in_seconds,
