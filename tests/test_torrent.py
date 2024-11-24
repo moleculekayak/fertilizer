@@ -38,7 +38,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
-      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"comment"] == b"https://redacted.sh/torrents.php?torrentid=123"
       assert parsed_torrent[b"info"][b"source"] == b"RED"
 
       os.remove(filepath)
@@ -53,7 +53,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
       parsed_torrent = get_bencoded_data(filepath)
 
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
-      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"comment"] == b"https://redacted.sh/torrents.php?torrentid=123"
       assert parsed_torrent[b"info"][b"source"] == b"RED"
 
       os.remove(filepath)
@@ -89,7 +89,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       assert filepath == "/tmp/RED/foo [PTH].torrent"
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
-      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"comment"] == b"https://redacted.sh/torrents.php?torrentid=123"
       assert parsed_torrent[b"info"][b"source"] == b"PTH"
 
       os.remove(filepath)
@@ -112,7 +112,7 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       assert filepath == "/tmp/RED/foo.torrent"
       assert parsed_torrent[b"announce"] == b"https://flacsfor.me/bar/announce"
-      assert parsed_torrent[b"comment"] == b"https://redacted.ch/torrents.php?torrentid=123"
+      assert parsed_torrent[b"comment"] == b"https://redacted.sh/torrents.php?torrentid=123"
       assert parsed_torrent[b"info"][b"source"] == b""
 
       os.remove(filepath)
