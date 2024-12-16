@@ -3,8 +3,8 @@ import requests_mock
 
 from .helpers import SetupTeardown
 
-from src.errors import AuthenticationError
-from src.api import GazelleAPI
+from fertilizer.errors import AuthenticationError
+from fertilizer.api import GazelleAPI
 
 
 class MockApi(GazelleAPI):

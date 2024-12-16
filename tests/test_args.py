@@ -2,7 +2,7 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.args import parse_args
+from fertilizer.args import parse_args
 
 
 class TestArgs(SetupTeardown):

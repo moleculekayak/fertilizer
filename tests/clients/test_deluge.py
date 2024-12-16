@@ -14,8 +14,8 @@ from tests.support.deluge_matchers import (
   torrent_info_matcher,
 )
 
-from src.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
-from src.clients.deluge import Deluge
+from fertilizer.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from fertilizer.clients.deluge import Deluge
 
 
 @pytest.fixture

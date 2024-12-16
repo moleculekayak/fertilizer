@@ -4,8 +4,8 @@ import requests_mock
 
 from tests.helpers import SetupTeardown, get_torrent_path
 
-from src.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
-from src.clients.qbittorrent import Qbittorrent
+from fertilizer.errors import TorrentClientError, TorrentClientAuthenticationError, TorrentExistsInClientError
+from fertilizer.clients.qbittorrent import Qbittorrent
 
 
 @pytest.fixture

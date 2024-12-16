@@ -1,6 +1,6 @@
 from .helpers import SetupTeardown
 
-from src.trackers import RedTracker, OpsTracker
+from fertilizer.trackers import RedTracker, OpsTracker
 
 
 class TestTrackerMethods(SetupTeardown):
