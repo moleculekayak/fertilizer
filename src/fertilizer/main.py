@@ -69,5 +69,6 @@ def main():
     print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)
 
+
 if __name__ == "__main__":
-    main()
+  main()
