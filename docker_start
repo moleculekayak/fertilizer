@@ -1,7 +1,7 @@
 #!/bin/sh
 
 if [ ! -f /config/config.json ]; then
-  cp /app/src/config.json /config/config.json
+  cp /app/src/fertilizer/config.json /config/config.json
 fi
 
 $@

@@ -1,7 +1,0 @@
-bencoder
-colorama
-requests
-flask
-pytest
-requests-mock
-ruff

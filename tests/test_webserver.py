@@ -5,7 +5,7 @@ import requests_mock
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.webserver import app as webserver_app
+from fertilizer.webserver import app as webserver_app
 
 
 @pytest.fixture()

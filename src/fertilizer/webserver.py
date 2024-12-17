@@ -3,9 +3,9 @@ import os
 
 from flask import Flask, request
 
-from src.errors import TorrentAlreadyExistsError, TorrentNotFoundError
-from src.parser import is_valid_infohash
-from src.scanner import scan_torrent_file
+from fertilizer.errors import TorrentAlreadyExistsError, TorrentNotFoundError
+from fertilizer.parser import is_valid_infohash
+from fertilizer.scanner import scan_torrent_file
 
 app = Flask(__name__)
 

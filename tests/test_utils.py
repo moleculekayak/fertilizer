@@ -1,6 +1,6 @@
 from .helpers import SetupTeardown
 
-from src.utils import flatten, url_join
+from fertilizer.utils import flatten, url_join
 
 
 class TestFlatten(SetupTeardown):

@@ -5,10 +5,10 @@ import requests_mock
 
 from .helpers import get_torrent_path, SetupTeardown, copy_and_mkdir
 
-from src.trackers import RedTracker
-from src.parser import get_bencoded_data
-from src.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
-from src.torrent import generate_new_torrent_from_file
+from fertilizer.trackers import RedTracker
+from fertilizer.parser import get_bencoded_data
+from fertilizer.errors import TorrentAlreadyExistsError, TorrentDecodingError, UnknownTrackerError, TorrentNotFoundError
+from fertilizer.torrent import generate_new_torrent_from_file
 
 
 class TestGenerateNewTorrentFromFile(SetupTeardown):

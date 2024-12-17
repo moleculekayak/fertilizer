@@ -3,7 +3,7 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.filesystem import sane_join, mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
+from fertilizer.filesystem import sane_join, mkdir_p, assert_path_exists, list_files_of_extension, replace_extension
 
 
 class TestSaneJoin(SetupTeardown):

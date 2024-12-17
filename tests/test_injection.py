@@ -5,11 +5,11 @@ from unittest.mock import MagicMock
 
 from .helpers import get_torrent_path, get_support_file_path, copy_and_mkdir, SetupTeardown
 
-from src.clients.deluge import Deluge
-from src.clients.qbittorrent import Qbittorrent
-from src.clients.transmission import TransmissionBt
-from src.errors import TorrentInjectionError
-from src.injection import Injection
+from fertilizer.clients.deluge import Deluge
+from fertilizer.clients.qbittorrent import Qbittorrent
+from fertilizer.clients.transmission import TransmissionBt
+from fertilizer.errors import TorrentInjectionError
+from fertilizer.injection import Injection
 
 
 class ConfigMock:

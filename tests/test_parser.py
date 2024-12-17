@@ -3,9 +3,9 @@ import pytest
 
 from .helpers import get_torrent_path, SetupTeardown
 
-from src.errors import TorrentDecodingError
-from src.trackers import RedTracker, OpsTracker
-from src.parser import (
+from fertilizer.errors import TorrentDecodingError
+from fertilizer.trackers import RedTracker, OpsTracker
+from fertilizer.parser import (
   is_valid_infohash,
   get_source,
   get_name,

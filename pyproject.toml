@@ -1,3 +1,32 @@
+[project]
+name = "fertilizer"
+version = "0.2.4"
+description = "fertilizer helps your seeds grow"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "bencoder",
+    "colorama",
+    "requests",
+    "flask",
+    "pytest",
+    "requests-mock",
+    "ruff",
+]
+
+[project.scripts]
+fertilizer = "fertilizer.main:main"
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "requests-mock",
+]
+
 [tool.ruff]
 line-length = 120
 indent-width = 2

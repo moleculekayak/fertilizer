@@ -1,6 +1,6 @@
 from .helpers import SetupTeardown
 
-from src.config import Config
+from fertilizer.config import Config
 
 
 class TestConfig(SetupTeardown):

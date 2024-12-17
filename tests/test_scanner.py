@@ -9,8 +9,8 @@ from colorama import Fore
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
-from src.errors import TorrentExistsInClientError, TorrentDecodingError
-from src.scanner import scan_torrent_directory, scan_torrent_file
+from fertilizer.errors import TorrentExistsInClientError, TorrentDecodingError
+from fertilizer.scanner import scan_torrent_directory, scan_torrent_file
 
 
 class TestScanTorrentFile(SetupTeardown):
