@@ -8,11 +8,11 @@ dependencies = [
     "bencoder",
     "colorama",
     "requests",
-    "flask",
-    "pytest",
-    "requests-mock",
-    "ruff",
+    "flask"
 ]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "requests-mock"]
 
 [project.scripts]
 fertilizer = "fertilizer.main:main"
@@ -20,12 +20,6 @@ fertilizer = "fertilizer.main:main"
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
-
-[dependency-groups]
-dev = [
-    "pytest",
-    "requests-mock",
-]
 
 [tool.ruff]
 line-length = 120
