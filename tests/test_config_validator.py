@@ -3,7 +3,7 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.config_validator import ConfigValidator
+from fertilizer.config_validator import ConfigValidator
 
 
 @pytest.fixture

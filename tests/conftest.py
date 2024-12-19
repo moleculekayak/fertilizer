@@ -1,8 +1,8 @@
 import pytest
 import requests_mock
 
-from src.config import Config
-from src.api import RedAPI, OpsAPI
+from fertilizer.config import Config
+from fertilizer.api import RedAPI, OpsAPI
 
 
 @pytest.fixture

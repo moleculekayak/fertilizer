@@ -4,12 +4,12 @@ import traceback
 
 from colorama import Fore
 
-from src.args import parse_args
-from src.config import Config
-from src.injection import Injection
-from src.scanner import scan_torrent_directory, scan_torrent_file
-from src.config_validator import ConfigValidator
-from src.webserver import run_webserver
+from fertilizer.args import parse_args
+from fertilizer.config import Config
+from fertilizer.injection import Injection
+from fertilizer.scanner import scan_torrent_directory, scan_torrent_file
+from fertilizer.config_validator import ConfigValidator
+from fertilizer.webserver import run_webserver
 
 
 def cli_entrypoint(args):
@@ -60,7 +60,7 @@ def command_log_wrapper(label, should_print, func):
     raise e
 
 
-if __name__ == "__main__":
+def main():
   args = parse_args()
 
   try:
@@ -68,3 +68,7 @@ if __name__ == "__main__":
   except KeyboardInterrupt:
     print(f"{Fore.RED}Exiting...{Fore.RESET}")
     exit(1)
+
+
+if __name__ == "__main__":
+  main()

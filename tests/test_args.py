@@ -2,7 +2,7 @@ import pytest
 
 from .helpers import SetupTeardown
 
-from src.args import parse_args
+from fertilizer.args import parse_args
 
 
 class TestArgs(SetupTeardown):
@@ -11,7 +11,7 @@ class TestArgs(SetupTeardown):
 
     assert args.input_directory == "foo"
     assert args.output_directory == "bar"
-    assert args.config_file == "src/config.json"
+    assert args.config_file == "src/fertilizer/config.json"
 
   def test_sets_input_directory(self, capsys):
     args = parse_args(["-i", "foo", "-o", "bar"])
