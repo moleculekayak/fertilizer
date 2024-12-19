@@ -9,9 +9,6 @@ dependencies = [
     "colorama",
     "requests",
     "flask",
-    "pytest",
-    "requests-mock",
-    "ruff",
 ]
 
 [project.scripts]
@@ -25,6 +22,7 @@ build-backend = "setuptools.build_meta"
 dev = [
     "pytest",
     "requests-mock",
+    "ruff",
 ]
 
 [tool.ruff]
