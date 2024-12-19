@@ -21,9 +21,6 @@ fertilizer = "fertilizer.main:main"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[tool.pytest.ini_options]
-pythonpath = "src"
-
 [tool.ruff]
 line-length = 120
 indent-width = 2
