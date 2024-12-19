@@ -8,11 +8,11 @@ dependencies = [
     "bencoder",
     "colorama",
     "requests",
-    "flask",
-    "pytest",
-    "requests-mock",
-    "ruff",
+    "flask"
 ]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff", "requests-mock"]
 
 [project.scripts]
 fertilizer = "fertilizer.main:main"
