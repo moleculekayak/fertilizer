@@ -2,11 +2,14 @@ FROM python:3.11-slim-buster
 
 WORKDIR /app
 
-COPY docker_start ./
+COPY pyproject.toml docker_start ./
+COPY src src
 
 RUN apt-get update \
   && echo "----- Installing python requirements" \
-  # TODO: install fertilizer from pip
+  && pip install uv \
+  && uv pip install -r pyproject.toml --system --all-extras \
+  && uv pip install -e . --system \
   && echo "----- Preparing directories" \
   && mkdir /config /data /torrents \
   && echo "----- Cleanup" \
