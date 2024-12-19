@@ -6,7 +6,7 @@ COPY docker_start ./
 
 RUN apt-get update \
   && echo "----- Installing python requirements" \
-  # TODO: install fertilizer from pip
+  && pip install fertilizer \
   && echo "----- Preparing directories" \
   && mkdir /config /data /torrents \
   && echo "----- Cleanup" \
