@@ -22,7 +22,8 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install --trusted-host pypi.python.org -r requirements.txt
+          pip install uv
+          uv pip install -r pyproject.toml --system --all-extras
       - name: Lint with Ruff
         run: ruff check
       - name: Check formatting with Ruff
