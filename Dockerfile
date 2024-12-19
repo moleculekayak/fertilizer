@@ -7,7 +7,8 @@ COPY src src
 
 RUN apt-get update \
   && echo "----- Installing python requirements" \
-  && pip install --trusted-host pypi.python.org . \
+  && pip install uv \
+  && uv pip install -r pyproject.toml --system --all-extras \
   && echo "----- Preparing directories" \
   && mkdir /config /data /torrents \
   && echo "----- Cleanup" \

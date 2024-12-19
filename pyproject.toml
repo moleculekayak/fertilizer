@@ -21,11 +21,8 @@ fertilizer = "fertilizer.main:main"
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[dependency-groups]
-dev = [
-    "pytest",
-    "requests-mock",
-]
+[tool.pytest.ini_options]
+pythonpath = "src"
 
 [tool.ruff]
 line-length = 120
