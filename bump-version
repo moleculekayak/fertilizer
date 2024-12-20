@@ -14,10 +14,13 @@ echo # move to a new line
 if [[ $REPLY =~ ^[Yy]$ ]]; then
   # Update the version in the pyproject.toml file
   sed -i "" "s/^version = \".*\"/version = \"$NEW_VERSION\"/g" "pyproject.toml"
+  git add pyproject.toml
+  git commit -m "Bump version to $NEW_VERSION"
 
   # Set the git tag
   git tag "v$NEW_VERSION"
 
-  git add pyproject.toml
-  git commit -m "Bump version to $NEW_VERSION"
+  # Push the changes
+  git push origin master
+  git push origin tag "v$NEW_VERSION"
 fi
