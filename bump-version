@@ -17,4 +17,7 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
 
   # Set the git tag
   git tag "v$NEW_VERSION"
+
+  git add pyproject.toml
+  git commit -m "Bump version to $NEW_VERSION"
 fi
