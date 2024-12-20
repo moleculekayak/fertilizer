@@ -108,16 +108,14 @@ dependencies = [
     { name = "bencoder" },
     { name = "colorama" },
     { name = "flask" },
-    { name = "pytest" },
     { name = "requests" },
-    { name = "requests-mock" },
-    { name = "ruff" },
 ]
 
-[package.dev-dependencies]
+[package.optional-dependencies]
 dev = [
     { name = "pytest" },
     { name = "requests-mock" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -125,16 +123,10 @@ requires-dist = [
     { name = "bencoder" },
     { name = "colorama" },
     { name = "flask" },
-    { name = "pytest" },
+    { name = "pytest", marker = "extra == 'dev'" },
     { name = "requests" },
-    { name = "requests-mock" },
-    { name = "ruff" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "pytest" },
-    { name = "requests-mock" },
+    { name = "requests-mock", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
 ]
 
 [[package]]

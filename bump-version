@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Get current version from pyproject.toml
+CURRENT_VERSION=$(grep "^version = " pyproject.toml | sed "s/^version = \"\(.*\)\"/\1/g")
+# Get the new version from stdin
+NEW_VERSION=$1
+
+echo "Bumping from $CURRENT_VERSION to $NEW_VERSION"
+
+# Check that the user wants to continue. exit if not
+read -p "Continue? (y/n) " -n 1 -r
+echo # move to a new line
+
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+  # Update the version in the pyproject.toml file
+  sed -i "" "s/^version = \".*\"/version = \"$NEW_VERSION\"/g" "pyproject.toml"
+
+  # Set the git tag
+  git tag "v$NEW_VERSION"
+fi
