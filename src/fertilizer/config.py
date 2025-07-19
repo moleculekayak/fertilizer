@@ -20,6 +20,7 @@ class Config:
       for key, value in {
         "red_key": env_vars.get("RED_KEY"),
         "ops_key": env_vars.get("OPS_KEY"),
+        "host": env_vars.get("HOST"),
         "port": env_vars.get("PORT"),
         "inject_torrents": True if env_vars.get("INJECT_TORRENTS", "").lower().strip() == "true" else False,
         "deluge_rpc_url": env_vars.get("DELUGE_RPC_URL"),
@@ -42,6 +43,10 @@ class Config:
   @property
   def ops_key(self) -> str:
     return self._config["ops_key"]
+
+  @property
+  def server_host(self) -> str:
+    return self._config.get("host", "0.0.0.0")
 
   @property
   def server_port(self) -> str:

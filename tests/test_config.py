@@ -27,6 +27,7 @@ class TestBuildFromSources(SetupTeardown):
       {
         "RED_KEY": "red_key",
         "OPS_KEY": "ops_key",
+        "HOST": "192.1.1.1",
         "PORT": "1234",
         "DELUGE_RPC_URL": "http://deluge:8112",
         "QBITTORRENT_URL": "http://qbittorrent:8080",
@@ -37,6 +38,7 @@ class TestBuildFromSources(SetupTeardown):
 
     assert config_dict["red_key"] == "red_key"
     assert config_dict["ops_key"] == "ops_key"
+    assert config_dict["host"] == "192.1.1.1"
     assert config_dict["port"] == "1234"
     assert config_dict["deluge_rpc_url"] == "http://deluge:8112"
     assert config_dict["qbittorrent_url"] == "http://qbittorrent:8080"
