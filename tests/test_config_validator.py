@@ -105,7 +105,7 @@ class TestValidate(SetupTeardown):
     with pytest.raises(ValueError) as excinfo:
       validator.validate()
 
-    assert '- "host": Invalid "host" (not_a_number): Not a valid IP address' in str(excinfo.value)
+    assert '- "host": Invalid "host" (not_an_ip): Not a valid IPv4 or IPv6 address' in str(excinfo.value)
 
   def test_raises_if_port_isnt_valid(self, valid_config):
     valid_config["port"] = "not_a_number"

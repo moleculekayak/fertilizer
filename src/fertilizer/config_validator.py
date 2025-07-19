@@ -120,9 +120,11 @@ class ConfigValidator:
 
   @staticmethod
   def __is_valid_host(host):
-    if ip_address(host):
-      return host
-    raise ValueError(f'Invalid "host" ({host}): Not a valid IP address')
+    try:
+      if ip_address(host):
+        return host
+    except:
+      raise ValueError(f'Invalid "host" ({host}): Not a valid IPv4 or IPv6 address')
 
   @staticmethod
   def __is_valid_port(port):
