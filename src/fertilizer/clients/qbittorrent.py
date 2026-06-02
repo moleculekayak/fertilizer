@@ -77,7 +77,21 @@ class Qbittorrent(TorrentClient):
     except requests.RequestException as e:
       raise TorrentClientAuthenticationError(f"qBittorrent login failed: {e}")
 
-    self._qbit_cookie = response.cookies.get_dict().get("SID")
+    # qBittorrent returns "Fails." on bad credentials, "Ok." on success
+    # (older versions), and an empty 204 on success (5.2+). A non-empty
+    # body that isn't "Ok." indicates failure.
+    body = response.text.strip()
+    if body and body != "Ok.":
+      raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
+
+    # session cookied were previously named "SID". 5.2+ uses "QBT_SID_<port>".
+    cookies = response.cookies.get_dict()
+    self._qbit_cookie = cookies.get("SID") or next(
+      (value for name, value in cookies.items() if name.startswith("QBT_SID")),
+      None,
+    )
+
+    # check if the cookie has been successfully identified or raise.
     if not self._qbit_cookie:
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
