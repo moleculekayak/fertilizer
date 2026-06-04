@@ -30,7 +30,7 @@ def cli_entrypoint(args):
     )
 
     if args.server:
-      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, port=config.server_port)
+      run_webserver(args.input_directory, args.output_directory, red_api, ops_api, injector, host=config.server_host, port=config.server_port)
     elif args.input_file:
       print(scan_torrent_file(args.input_file, args.output_directory, red_api, ops_api, injector))
     elif args.input_directory:

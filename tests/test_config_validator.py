@@ -21,6 +21,7 @@ def valid_config(red_key, ops_key):
   return {
     "red_key": red_key,
     "ops_key": ops_key,
+    "host": "192.1.1.1",
     "port": "1234",
     "deluge_rpc_url": "http://:pass@deluge:8112",
     "inject_torrents": "true",
@@ -47,6 +48,7 @@ class TestValidate(SetupTeardown):
     assert validated_config == {
       "red_key": red_key,
       "ops_key": ops_key,
+      "host": "192.1.1.1",
       "port": 1234,
       "deluge_rpc_url": "http://:pass@deluge:8112",
       "inject_torrents": True,
@@ -94,6 +96,16 @@ class TestValidate(SetupTeardown):
 
     assert '- "red_key": does not appear to match known API key patterns: "a"' in str(excinfo.value)
     assert '- "ops_key": does not appear to match known API key patterns: "b"' in str(excinfo.value)
+
+  def test_raises_if_host_isnt_valid(self, valid_config):
+    valid_config["host"] = "not_an_ip"
+
+    validator = ConfigValidator(valid_config)
+
+    with pytest.raises(ValueError) as excinfo:
+      validator.validate()
+
+    assert '- "host": Invalid "host" (not_an_ip): Not a valid IPv4 or IPv6 address' in str(excinfo.value)
 
   def test_raises_if_port_isnt_valid(self, valid_config):
     valid_config["port"] = "not_a_number"

@@ -1,5 +1,6 @@
 import re
 from urllib.parse import urlparse
+from ipaddress import ip_address
 
 from .api import RedAPI, OpsAPI
 from .filesystem import assert_path_exists
@@ -14,6 +15,7 @@ class ConfigValidator:
     self.validation_schema = {
       "red_key": self.__is_valid_red_key,
       "ops_key": self.__is_valid_ops_key,
+      "host": self.__is_valid_host,
       "port": self.__is_valid_port,
       "deluge_rpc_url": self.__is_valid_deluge_url,
       "transmission_rpc_url": self.__is_valid_transmission_rpc_url,
@@ -115,6 +117,14 @@ class ConfigValidator:
     if coerced in ["true", "false"]:
       return coerced == "true"
     raise ValueError('value is not boolean ("true" or "false")')
+
+  @staticmethod
+  def __is_valid_host(host):
+    try:
+      if ip_address(host):
+        return host
+    except:
+      raise ValueError(f'Invalid "host" ({host}): Not a valid IPv4 or IPv6 address')
 
   @staticmethod
   def __is_valid_port(port):
