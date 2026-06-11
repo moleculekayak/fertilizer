@@ -146,16 +146,21 @@ def scan_torrent_directory(
 
 
 def __collect_infohashes_from_files(files: list[str]) -> dict:
-  infohash_dict = {}
-
-  for filepath in files:
-    try:
-      torrent_data = get_bencoded_data(filepath)
-
-      if torrent_data:
-        infohash = calculate_infohash(torrent_data)
-        infohash_dict[infohash] = filepath
-    except Exception:
-      continue
-
-  return infohash_dict
+    print(f"\rStarting up.  Collecting infohashes...")
+    print(f"\rFound {len(files)} files to process...")
+    infohash_dict = {}
+    
+    for filepath in files:
+        try:
+            torrent_data = get_bencoded_data(filepath)
+            if torrent_data:
+                infohash = calculate_infohash(torrent_data)
+                infohash_dict[infohash] = filepath
+        except Exception:
+            continue
+        processed += 1
+        print(f"\r({processed}/{len(files)}) Analyzing torrent files...", end="", flush=True)
+    
+    print()  # New line after progress complete
+    print(f"\rDone collecting infohashes.")
+    return infohash_dict
