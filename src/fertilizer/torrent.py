@@ -116,11 +116,20 @@ def __generate_torrent_output_filepath(
   tracker_name = new_tracker.site_shortname()
   source_name = f" [{new_source}]" if new_source else ""
 
-  filepath_from_api_response = unescape(api_response["response"]["torrent"]["filePath"])
+  filepath_from_api_response = __replace_lone_surrogates(unescape(api_response["response"]["torrent"]["filePath"]))
   filename = f"{filepath_from_api_response}{source_name}.torrent"
   torrent_filepath = os.path.join(output_directory, tracker_name, filename)
 
   return torrent_filepath
+
+
+def __replace_lone_surrogates(value: str) -> str:
+  # Tracker APIs can return JSON containing lone surrogates (escaped invalid bytes
+  # from the original upload). Those cannot be encoded to UTF-8, so any filesystem
+  # call on a path containing them fails with "'utf-8' codec can't encode
+  # characters: surrogates not allowed". Replace them with U+FFFD and leave every
+  # valid character untouched.
+  return "".join("�" if "\ud800" <= char <= "\udfff" else char for char in value)
 
 
 def __get_torrent_id(api_response: dict) -> str:
