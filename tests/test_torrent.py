@@ -117,6 +117,20 @@ class TestGenerateNewTorrentFromFile(SetupTeardown):
 
       os.remove(filepath)
 
+  def test_handles_lone_surrogates_in_api_filepath(self, red_api, ops_api):
+    with requests_mock.Mocker() as m:
+      response = {"status": "success", "response": {"torrent": {"filePath": "foo \ud83d bar", "id": 123}}}
+      m.get(re.compile("action=torrent"), json=response)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      torrent_path = get_torrent_path("red_source")
+      _, filepath, _ = generate_new_torrent_from_file(torrent_path, "/tmp", red_api, ops_api)
+
+      assert "\ud83d" not in filepath
+      assert os.path.isfile(filepath)
+
+      os.remove(filepath)
+
   def test_raises_error_if_cannot_decode_torrent(self, red_api, ops_api):
     with pytest.raises(TorrentDecodingError) as excinfo:
       torrent_path = get_torrent_path("broken")
