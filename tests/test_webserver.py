@@ -5,6 +5,7 @@ import requests_mock
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
+from fertilizer.parser import calculate_infohash, get_bencoded_data
 from fertilizer.webserver import app as webserver_app
 
 
@@ -73,6 +74,38 @@ class TestWebserverWebhook(SetupTeardown):
       assert response.status_code == 201
       assert response.json == {"status": "success", "message": "/tmp/output/OPS/foo [OPS].torrent"}
       assert os.path.exists("/tmp/output/OPS/foo [OPS].torrent")
+
+  def test_resolves_name_based_torrent_file_via_fallback(self, client):
+    source_path = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/Some Album (2013) [FLAC].torrent")
+    real_infohash = calculate_infohash(get_bencoded_data(source_path)).lower()
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      response = client.post("/api/webhook", data={"infohash": real_infohash})
+      assert response.status_code == 201
+      assert response.json == {"status": "success", "message": "/tmp/output/OPS/foo [OPS].torrent"}
+      assert os.path.exists("/tmp/output/OPS/foo [OPS].torrent")
+
+  def test_returns_404_when_no_torrent_matches_infohash(self, client, infohash):
+    copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/Some Album (2013) [FLAC].torrent")
+
+    response = client.post("/api/webhook", data={"infohash": infohash})
+    assert response.status_code == 404
+    assert response.json == {"status": "error", "message": f"No torrent found at /tmp/input/{infohash}.torrent"}
+
+  def test_fallback_skips_undecodable_torrent_files(self, client):
+    copy_and_mkdir(get_torrent_path("broken"), "/tmp/input/broken.torrent")
+    source_path = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/Some Album (2013) [FLAC].torrent")
+    real_infohash = calculate_infohash(get_bencoded_data(source_path)).lower()
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      response = client.post("/api/webhook", data={"infohash": real_infohash})
+      assert response.status_code == 201
 
   def test_returns_okay_if_torrent_already_found(self, client, infohash):
     copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/{infohash}.torrent")

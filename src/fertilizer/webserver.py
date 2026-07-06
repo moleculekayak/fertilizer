@@ -4,7 +4,8 @@ import os
 from flask import Flask, request
 
 from fertilizer.errors import TorrentAlreadyExistsError, TorrentNotFoundError
-from fertilizer.parser import is_valid_infohash
+from fertilizer.filesystem import list_files_of_extension
+from fertilizer.parser import calculate_infohash, get_bencoded_data, is_valid_infohash
 from fertilizer.scanner import scan_torrent_file
 
 app = Flask(__name__)
@@ -34,7 +35,15 @@ def webhook():
   if not is_valid_infohash(infohash):
     return http_error("Invalid infohash", 400)
   if not os.path.exists(filepath):
-    return http_error(f"No torrent found at {filepath}", 404)
+    # Torrent clients don't necessarily export .torrent files named by
+    # infohash (e.g. qBittorrent's "Copy .torrent files to" uses the torrent
+    # name), so fall back to matching the files' actual infohashes.
+    fallback_filepath = __find_torrent_filepath_by_infohash(config["input_dir"], infohash)
+
+    if fallback_filepath is None:
+      return http_error(f"No torrent found at {filepath}", 404)
+
+    filepath = fallback_filepath
 
   try:
     new_filepath = scan_torrent_file(
@@ -57,6 +66,19 @@ def webhook():
 @app.errorhandler(404)
 def page_not_found(_e):
   return http_error("Not found", 404)
+
+
+def __find_torrent_filepath_by_infohash(input_directory: str, infohash: str) -> str | None:
+  for filepath in list_files_of_extension(input_directory, ".torrent"):
+    try:
+      torrent_data = get_bencoded_data(filepath)
+
+      if torrent_data and calculate_infohash(torrent_data) == infohash.upper():
+        return filepath
+    except Exception:
+      continue
+
+  return None
 
 
 def http_success(message, code):
