@@ -108,6 +108,36 @@ class TestGetTorrentInfo(SetupTeardown):
         "content_path": "/tmp/bar/foo",
       }
 
+  def test_returns_top_level_directory_for_single_file_in_directory(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/tmp/bar/artist - album/01 track.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/tmp/bar/artist - album"
+
+  def test_returns_content_path_unchanged_for_bare_single_file(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/tmp/bar/foo.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/tmp/bar/foo.flac"
+
+  def test_returns_content_path_unchanged_when_outside_save_path(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/other/place/artist - album/01 track.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/other/place/artist - album/01 track.flac"
+
   def test_raises_exception_on_missing_torrent(self, qbit_client):
     with requests_mock.Mocker() as m:
       m.post(re.compile("torrents/info"), json=[])

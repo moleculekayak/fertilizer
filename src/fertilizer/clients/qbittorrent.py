@@ -35,7 +35,7 @@ class Qbittorrent(TorrentClient):
         "complete": torrent_completed,
         "label": torrent["category"],
         "save_path": torrent["save_path"],
-        "content_path": torrent["content_path"],
+        "content_path": self.__normalize_content_path(torrent["save_path"], torrent["content_path"]),
       }
     else:
       raise TorrentClientError("Client returned unexpected response")
@@ -64,6 +64,21 @@ class Qbittorrent(TorrentClient):
     self.__wrap_request("torrents/add", data=params, files=torrents)
 
     return new_torrent_infohash
+
+  @staticmethod
+  def __normalize_content_path(save_path, content_path):
+    # qBittorrent reports the absolute path of the file itself for any torrent
+    # containing a single file, even when that file lives inside a directory.
+    # Fertilizer expects the topmost file or directory of the torrent (which is
+    # what the Deluge and Transmission clients report), so walk the content
+    # path back up to the entry directly beneath the save path.
+    save = Path(save_path)
+    content = Path(content_path)
+
+    if not content.is_relative_to(save) or content.parent == save:
+      return content_path
+
+    return str(save / content.relative_to(save).parts[0])
 
   def __authenticate(self):
     href, username, password = self._qbit_url_parts
