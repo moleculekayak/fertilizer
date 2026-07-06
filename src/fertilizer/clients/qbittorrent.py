@@ -55,6 +55,10 @@ class Qbittorrent(TorrentClient):
       "category": self._determine_label(source_torrent_info),
       "tags": self.torrent_label,
       "savepath": save_path_override if save_path_override else source_torrent_info["save_path"],
+      # The injected data is already complete at savepath, so the torrent must
+      # not be routed through the global "incomplete torrents" download path -
+      # otherwise qBittorrent rechecks in the wrong directory and re-downloads.
+      "useDownloadPath": False,
     }
 
     self.__wrap_request("torrents/add", data=params, files=torrents)

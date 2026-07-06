@@ -154,6 +154,7 @@ class TestInjectTorrent(SetupTeardown):
       assert b'name="category"\r\n\r\nfertilizer' in m.request_history[-1].body
       assert b'name="tags"\r\n\r\nfertilizer' in m.request_history[-1].body
       assert b'name="savepath"\r\n\r\n/tmp/bar/' in m.request_history[-1].body
+      assert b'name="useDownloadPath"\r\n\r\nFalse' in m.request_history[-1].body
 
   def test_uses_save_path_override_if_present(self, qbit_client, torrent_info_response):
     torrent_path = get_torrent_path("red_source")
@@ -166,6 +167,7 @@ class TestInjectTorrent(SetupTeardown):
 
       assert "torrents/add" in m.request_history[-1].url
       assert b'name="savepath"\r\n\r\n/tmp/override/' in m.request_history[-1].body
+      assert b'name="useDownloadPath"\r\n\r\nFalse' in m.request_history[-1].body
 
   def test_raises_if_source_torrent_isnt_found_in_client(self, qbit_client):
     with requests_mock.Mocker() as m:
