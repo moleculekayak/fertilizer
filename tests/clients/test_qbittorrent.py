@@ -55,6 +55,35 @@ class TestSetup(SetupTeardown):
       assert response
       assert qbit_client._qbit_cookie is not None
 
+  def test_sets_auth_cookie_on_qbit_5_2(self, qbit_client):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="", headers={"Set-Cookie": "QBT_SID_8080=abcd;"})
+
+      response = qbit_client.setup()
+
+      assert response
+      assert qbit_client._qbit_cookie == "QBT_SID_8080=abcd"
+
+  def test_sends_session_cookie_name_back_on_requests(self, qbit_client, torrent_info_response):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="", headers={"Set-Cookie": "QBT_SID_8080=abcd;"})
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      qbit_client.setup()
+      qbit_client.get_torrent_info("infohash")
+
+      assert m.request_history[-1].headers["Cookie"] == "QBT_SID_8080=abcd"
+
+  def test_sends_legacy_sid_cookie_back_on_requests(self, qbit_client, torrent_info_response):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="Ok.", headers={"Set-Cookie": "SID=1234;"})
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      qbit_client.setup()
+      qbit_client.get_torrent_info("infohash")
+
+      assert m.request_history[-1].headers["Cookie"] == "SID=1234"
+
   def test_raises_exception_on_failed_auth(self, qbit_client):
     with requests_mock.Mocker() as m:
       m.post(re.compile("auth/login"), status_code=403)

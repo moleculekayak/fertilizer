@@ -84,10 +84,12 @@ class Qbittorrent(TorrentClient):
     if body and body != "Ok.":
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
-    # session cookied were previously named "SID". 5.2+ uses "QBT_SID_<port>".
+    # The session cookie was previously named "SID". 5.2+ uses "QBT_SID_<port>"
+    # and only accepts the session under that exact name, so we have to keep
+    # the cookie name around and echo it back verbatim on every request.
     cookies = response.cookies.get_dict()
-    self._qbit_cookie = cookies.get("SID") or next(
-      (value for name, value in cookies.items() if name.startswith("QBT_SID")),
+    self._qbit_cookie = next(
+      (f"{name}={value}" for name, value in cookies.items() if name == "SID" or name.startswith("QBT_SID")),
       None,
     )
 
@@ -108,7 +110,7 @@ class Qbittorrent(TorrentClient):
     try:
       response = requests.post(
         url_join(href, path),
-        headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
+        headers=CaseInsensitiveDict({"Cookie": self._qbit_cookie}),
         data=data,
         files=files,
       )
@@ -117,7 +119,7 @@ class Qbittorrent(TorrentClient):
 
       return response.text
     except requests.RequestException as e:
-      if e.response.status_code == 403:
+      if e.response is not None and e.response.status_code == 403:
         print(e.response.text)
         raise TorrentClientAuthenticationError("Failed to authenticate with qBittorrent")
 
