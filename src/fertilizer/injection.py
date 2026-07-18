@@ -5,7 +5,7 @@ from .clients.deluge import Deluge
 from .clients.qbittorrent import Qbittorrent
 from .clients.transmission import TransmissionBt
 from .config import Config
-from .errors import TorrentInjectionError
+from .errors import TorrentExistsInClientError, TorrentInjectionError
 from .parser import calculate_infohash, get_bencoded_data
 
 
@@ -21,6 +21,11 @@ class Injection:
 
   def inject_torrent(self, source_torrent_filepath, new_torrent_filepath, new_tracker):
     source_torrent_data = get_bencoded_data(source_torrent_filepath)
+    new_torrent_infohash = calculate_infohash(get_bencoded_data(new_torrent_filepath)).lower()
+
+    if self.client.torrent_exists(new_torrent_infohash):
+      raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
+
     source_torrent_file_or_dir = self.__determine_source_torrent_data_location(source_torrent_data)
     output_location = self.__determine_output_location(source_torrent_file_or_dir, new_tracker)
     self.__link_files_to_output_location(source_torrent_file_or_dir, output_location)

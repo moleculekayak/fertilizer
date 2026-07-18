@@ -8,7 +8,7 @@ from .helpers import get_torrent_path, get_support_file_path, copy_and_mkdir, Se
 from fertilizer.clients.deluge import Deluge
 from fertilizer.clients.qbittorrent import Qbittorrent
 from fertilizer.clients.transmission import TransmissionBt
-from fertilizer.errors import TorrentInjectionError
+from fertilizer.errors import TorrentExistsInClientError, TorrentInjectionError
 from fertilizer.injection import Injection
 
 
@@ -25,6 +25,7 @@ class ConfigMock:
 def injector():
   instance = Injection(ConfigMock())
   instance.client = MagicMock()
+  instance.client.torrent_exists.return_value = False
   return instance
 
 
@@ -164,3 +165,29 @@ class TestInjectTorrent(SetupTeardown):
       injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
 
     assert str(excinfo.value) == f"Cannot link given torrent since it's already been linked: {parent_dir}"
+
+  def test_raises_error_without_linking_if_new_torrent_already_in_client(self, injector):
+    source_torrent_filepath = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+    new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
+    copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
+    injector.client.torrent_exists.return_value = True
+
+    with pytest.raises(TorrentExistsInClientError) as excinfo:
+      injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
+
+    assert str(excinfo.value) == "New torrent already exists in client (2aee440cdc7429b3e4a7e4d20e3839dbb48d72c2)"
+    assert not os.path.exists("/tmp/injection/OPS/Big Buck Bunny")
+    injector.client.inject_torrent.assert_not_called()
+
+  def test_checks_client_for_new_torrent_before_linking(self, injector):
+    source_torrent_filepath = copy_and_mkdir(get_torrent_path("red_source"), "/tmp/input/red_source.torrent")
+    new_torrent_filepath = copy_and_mkdir(get_torrent_path("ops_source"), "/tmp/output/ops_source.torrent")
+    copy_and_mkdir(get_support_file_path("foo.txt"), "/tmp/input/Big Buck Bunny/foo.txt")
+    injector.client.get_torrent_info.return_value = {"content_path": "/tmp/input/Big Buck Bunny"}
+
+    injector.inject_torrent(source_torrent_filepath, new_torrent_filepath, "OPS")
+
+    injector.client.torrent_exists.assert_called_once_with("2aee440cdc7429b3e4a7e4d20e3839dbb48d72c2")
+    assert os.path.exists("/tmp/injection/OPS/Big Buck Bunny/foo.txt")
+    injector.client.inject_torrent.assert_called_once()

@@ -75,7 +75,7 @@ class TransmissionBt(TorrentClient):
       raise TorrentClientError("Cannot inject a torrent that is not complete")
 
     new_torrent_infohash = calculate_infohash(get_bencoded_data(new_torrent_filepath)).lower()
-    new_torrent_already_exists = self.__does_torrent_exist_in_client(new_torrent_infohash)
+    new_torrent_already_exists = self.torrent_exists(new_torrent_infohash)
     if new_torrent_already_exists:
       raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
 
@@ -132,9 +132,3 @@ class TransmissionBt(TorrentClient):
         raise TorrentClientAuthenticationError("Failed to authenticate with TransmissionBt")
 
       raise TorrentClientError(f"TransmissionBt request to '{self._base_url}' for method '{method}' failed: {e}")
-
-  def __does_torrent_exist_in_client(self, infohash):
-    try:
-      return bool(self.get_torrent_info(infohash))
-    except TorrentClientError:
-      return False
