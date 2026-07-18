@@ -1,5 +1,6 @@
 from urllib.parse import urlparse, unquote
 
+from fertilizer.errors import TorrentClientError
 from fertilizer.utils import url_join
 
 
@@ -15,6 +16,12 @@ class TorrentClient:
 
   def inject_torrent(self, *_args, **_kwargs):
     raise NotImplementedError
+
+  def torrent_exists(self, infohash):
+    try:
+      return bool(self.get_torrent_info(infohash))
+    except TorrentClientError:
+      return False
 
   def _extract_credentials_from_url(self, url, base_path=None):
     parsed_url = urlparse(url)
