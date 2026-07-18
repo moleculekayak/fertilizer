@@ -48,11 +48,11 @@ class Injection:
   @staticmethod
   def __determine_torrent_client(config: Config):
     if config.deluge_rpc_url:
-      return Deluge(config.deluge_rpc_url)
+      return Deluge(config.deluge_rpc_url, config.torrent_label)
     elif config.transmission_rpc_url:
-      return TransmissionBt(config.transmission_rpc_url)
+      return TransmissionBt(config.transmission_rpc_url, config.torrent_label)
     elif config.qbittorrent_url:
-      return Qbittorrent(config.qbittorrent_url)
+      return Qbittorrent(config.qbittorrent_url, config.torrent_label)
 
   # If the torrent is a single bare file, this returns the path _to that file_
   # If the torrent is one or many files in a directory, this returns the topmost directory path

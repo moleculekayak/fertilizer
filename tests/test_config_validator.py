@@ -25,6 +25,7 @@ def valid_config(red_key, ops_key):
     "deluge_rpc_url": "http://:pass@deluge:8112",
     "inject_torrents": "true",
     "injection_link_directory": "/tmp/injection",
+    "torrent_label": "fert",
   }
 
 
@@ -51,6 +52,7 @@ class TestValidate(SetupTeardown):
       "deluge_rpc_url": "http://:pass@deluge:8112",
       "inject_torrents": True,
       "injection_link_directory": "/tmp/injection",
+      "torrent_label": "fert",
     }
 
   def test_raises_error_when_required_key_missing(self):
@@ -147,6 +149,29 @@ class TestValidate(SetupTeardown):
       validator.validate()
 
     assert '- "inject_torrents": value is not boolean ("true" or "false")' in str(excinfo.value)
+
+  def test_raises_if_torrent_label_is_empty(self, valid_config):
+    valid_config["torrent_label"] = "  "
+
+    validator = ConfigValidator(valid_config)
+
+    with pytest.raises(ValueError) as excinfo:
+      validator.validate()
+
+    assert '- "torrent_label": Invalid "torrent_label": Cannot be empty' in str(excinfo.value)
+
+  def test_raises_if_torrent_label_contains_path_separators(self, valid_config):
+    for label in ["fert/lizer", "fert\\lizer"]:
+      valid_config["torrent_label"] = label
+
+      validator = ConfigValidator(valid_config)
+
+      with pytest.raises(ValueError) as excinfo:
+        validator.validate()
+
+      assert f'- "torrent_label": Invalid "torrent_label" ({label}): Cannot contain path separators' in str(
+        excinfo.value
+      )
 
   def test_raises_if_injection_directory_doesnt_exist(self, valid_config):
     valid_config["injection_link_directory"] = "/tmp/doesnt_exist"

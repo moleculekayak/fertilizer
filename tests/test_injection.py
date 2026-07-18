@@ -19,6 +19,7 @@ class ConfigMock:
     self.deluge_rpc_url = "http://:pass@localhost:8112/json"
     self.transmission_rpc_url = "http://:pass@localhost:51413/transmission/rpc"
     self.qbittorrent_url = "http://localhost:8080"
+    self.torrent_label = "fertilizer"
 
 
 @pytest.fixture
@@ -75,6 +76,26 @@ class TestInjection(SetupTeardown):
     assert isinstance(Injection(deluge_config).client, Deluge)
     assert isinstance(Injection(qbit_config).client, Qbittorrent)
     assert isinstance(Injection(transmission_config).client, TransmissionBt)
+
+  def test_passes_torrent_label_to_torrent_client(self):
+    deluge_config = ConfigMock()
+    deluge_config.qbittorrent_url = None
+    deluge_config.transmission_rpc_url = None
+    deluge_config.torrent_label = "fert"
+
+    qbit_config = ConfigMock()
+    qbit_config.deluge_rpc_url = None
+    qbit_config.transmission_rpc_url = None
+    qbit_config.torrent_label = "fert"
+
+    transmission_config = ConfigMock()
+    transmission_config.deluge_rpc_url = None
+    transmission_config.qbittorrent_url = None
+    transmission_config.torrent_label = "fert"
+
+    assert Injection(deluge_config).client.torrent_label == "fert"
+    assert Injection(qbit_config).client.torrent_label == "fert"
+    assert Injection(transmission_config).client.torrent_label == "fert"
 
 
 class TestSetup(SetupTeardown):

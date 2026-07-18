@@ -138,6 +138,21 @@ class TestInjectTorrent(SetupTeardown):
       assert "torrents/add" in m.request_history[-1].url
       assert b'name="savepath"\r\n\r\n/tmp/override/' in m.request_history[-1].body
 
+  def test_uses_custom_torrent_label(self, torrent_info_response):
+    torrent_path = get_torrent_path("red_source")
+    qbit_client = Qbittorrent("http://admin:supersecret@localhost:8080", "fert")
+    torrent_info_response["category"] = ""
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), [{"json": [torrent_info_response]}, {"json": []}])
+      m.post(re.compile("torrents/add"), json={"hash": "1234"})
+
+      qbit_client.inject_torrent("foo", torrent_path)
+
+      assert b'filename="red_source.fert.torrent"' in m.request_history[-1].body
+      assert b'name="category"\r\n\r\nfert' in m.request_history[-1].body
+      assert b'name="tags"\r\n\r\nfert' in m.request_history[-1].body
+
   def test_raises_if_source_torrent_isnt_found_in_client(self, qbit_client):
     with requests_mock.Mocker() as m:
       m.post(re.compile("torrents/info"), json=[])

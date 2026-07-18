@@ -26,6 +26,7 @@ class Config:
         "transmission_rpc_url": env_vars.get("TRANSMISSION_RPC_URL"),
         "qbittorrent_url": env_vars.get("QBITTORRENT_URL"),
         "injection_link_directory": env_vars.get("INJECTION_LINK_DIRECTORY"),
+        "torrent_label": env_vars.get("TORRENT_LABEL"),
       }.items()
       if value
     }
@@ -66,3 +67,7 @@ class Config:
   @property
   def injection_link_directory(self) -> str | None:
     return self._config.get("injection_link_directory")
+
+  @property
+  def torrent_label(self) -> str:
+    return self._config.get("torrent_label", "fertilizer")

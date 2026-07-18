@@ -4,8 +4,8 @@ from fertilizer.utils import url_join
 
 
 class TorrentClient:
-  def __init__(self):
-    self.torrent_label = "fertilizer"
+  def __init__(self, torrent_label="fertilizer"):
+    self.torrent_label = torrent_label
 
   def setup(self):
     raise NotImplementedError

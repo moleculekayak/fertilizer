@@ -16,8 +16,8 @@ class Deluge(TorrentClient):
     "NO_AUTH": 1,
   }
 
-  def __init__(self, rpc_url):
-    super().__init__()
+  def __init__(self, rpc_url, torrent_label="fertilizer"):
+    super().__init__(torrent_label)
     self._rpc_url = rpc_url
     self._deluge_cookie = None
     self._deluge_request_id = 0
@@ -79,7 +79,7 @@ class Deluge(TorrentClient):
       raise TorrentClientError("Cannot inject a torrent that is not complete")
 
     params = [
-      f"{Path(new_torrent_filepath).stem}.fertilizer.torrent",
+      f"{Path(new_torrent_filepath).stem}.{self.torrent_label}.torrent",
       base64.b64encode(open(new_torrent_filepath, "rb").read()).decode("utf-8"),
       {
         "download_location": save_path_override if save_path_override else source_torrent_info["save_path"],
