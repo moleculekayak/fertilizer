@@ -42,6 +42,16 @@ class TestInit(SetupTeardown):
 
     assert qbit_client._qbit_url_parts == ("http://localhost/api/v2", "admin", "supersecret")
 
+  def test_initializes_with_path_prefix(self):
+    qbit_client = Qbittorrent("http://admin:supersecret@localhost:8080/proxy/apikey")
+
+    assert qbit_client._qbit_url_parts == ("http://localhost:8080/proxy/apikey/api/v2", "admin", "supersecret")
+
+  def test_initializes_with_url_already_containing_base_path(self):
+    qbit_client = Qbittorrent("http://admin:supersecret@localhost:8080/api/v2")
+
+    assert qbit_client._qbit_url_parts == ("http://localhost:8080/api/v2", "admin", "supersecret")
+
 
 class TestSetup(SetupTeardown):
   def test_sets_auth_cookie(self, qbit_client):

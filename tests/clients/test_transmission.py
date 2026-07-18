@@ -39,6 +39,20 @@ class TestInit(SetupTeardown):
     assert transmission_client._basic_auth.username == "admin"
     assert transmission_client._basic_auth.password == "supersecret"
 
+  def test_initializes_with_path_prefix(self):
+    transmission_client = TransmissionBt("http://admin:supersecret@localhost:51314/proxy")
+
+    assert transmission_client._base_url == "http://localhost:51314/proxy/transmission/rpc"
+    assert transmission_client._basic_auth.username == "admin"
+    assert transmission_client._basic_auth.password == "supersecret"
+
+  def test_initializes_with_url_already_containing_base_path(self):
+    transmission_client = TransmissionBt("http://admin:supersecret@localhost:51314/transmission/rpc")
+
+    assert transmission_client._base_url == "http://localhost:51314/transmission/rpc"
+    assert transmission_client._basic_auth.username == "admin"
+    assert transmission_client._basic_auth.password == "supersecret"
+
 
 class TestSetup(SetupTeardown):
   def test_sets_session_id(self, transmission_client):

@@ -23,8 +23,10 @@ class TorrentClient:
     host = f"{parsed_url.hostname}{(':' + str(parsed_url.port)) if parsed_url.port else ''}"
     origin = f"{parsed_url.scheme}://{host}"
 
-    if base_path is not None:
-      href = url_join(origin, base_path)
+    # Preserve any path prefix in the configured URL (e.g. a reverse proxy) but
+    # avoid doubling the base path if the URL already ends with it.
+    if base_path is not None and not f"/{url_join(parsed_url.path)}".endswith(f"/{url_join(base_path)}"):
+      href = url_join(origin, parsed_url.path, base_path)
     else:
       href = url_join(origin, parsed_url.path)
 
