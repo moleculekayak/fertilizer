@@ -27,8 +27,8 @@ class StatusEnum(Enum):
 class TransmissionBt(TorrentClient):
   X_TRANSMISSION_SESSION_ID = "X-Transmission-Session-Id"
 
-  def __init__(self, rpc_url):
-    super().__init__()
+  def __init__(self, rpc_url, torrent_label="fertilizer"):
+    super().__init__(torrent_label)
     transmission_url_parts = self._extract_credentials_from_url(rpc_url, "transmission/rpc")
     self._base_url = transmission_url_parts[0]
     self._basic_auth = HTTPBasicAuth(transmission_url_parts[1], transmission_url_parts[2])

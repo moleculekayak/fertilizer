@@ -13,6 +13,12 @@ class TestConfig(SetupTeardown):
   def test_returns_default_value_if_present(self):
     assert Config({}).server_port == "9713"
 
+  def test_returns_default_torrent_label_if_absent(self):
+    assert Config({}).torrent_label == "fertilizer"
+
+  def test_returns_configured_torrent_label(self):
+    assert Config({"torrent_label": "fert"}).torrent_label == "fert"
+
 
 class TestBuildFromSources(SetupTeardown):
   def test_builds_from_config_file(self):
@@ -32,6 +38,7 @@ class TestBuildFromSources(SetupTeardown):
         "QBITTORRENT_URL": "http://qbittorrent:8080",
         "INJECT_TORRENTS": "true",
         "INJECTION_LINK_DIRECTORY": "/my/cool/dir",
+        "TORRENT_LABEL": "fert",
       },
     )
 
@@ -42,6 +49,7 @@ class TestBuildFromSources(SetupTeardown):
     assert config_dict["qbittorrent_url"] == "http://qbittorrent:8080"
     assert config_dict["inject_torrents"]
     assert config_dict["injection_link_directory"] == "/my/cool/dir"
+    assert config_dict["torrent_label"] == "fert"
 
   def test_config_file_takes_precedence_over_env(self):
     config_dict = Config.build_config_dict("tests/support/config.json", {"RED_KEY": "env_red_key"})

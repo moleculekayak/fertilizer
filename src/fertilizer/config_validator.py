@@ -20,6 +20,7 @@ class ConfigValidator:
       "qbittorrent_url": self.__is_valid_qbit_url,
       "inject_torrents": self.__is_boolean,
       "injection_link_directory": assert_path_exists,
+      "torrent_label": self.__is_valid_torrent_label,
     }
 
   @staticmethod
@@ -115,6 +116,15 @@ class ConfigValidator:
     if coerced in ["true", "false"]:
       return coerced == "true"
     raise ValueError('value is not boolean ("true" or "false")')
+
+  @staticmethod
+  def __is_valid_torrent_label(label):
+    stripped = label.strip()
+    if not stripped:
+      raise ValueError('Invalid "torrent_label": Cannot be empty')
+    if "/" in stripped or "\\" in stripped:
+      raise ValueError(f'Invalid "torrent_label" ({label}): Cannot contain path separators')
+    return stripped
 
   @staticmethod
   def __is_valid_port(port):

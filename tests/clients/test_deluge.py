@@ -338,6 +338,38 @@ class TestInjectTorrent(SetupTeardown):
       assert m.request_history[-1].json()["params"] == ["abc123", "fertilizer"]
       assert m.request_history[-1].json()["method"] == "label.set_torrent"
 
+  def test_uses_custom_torrent_label(self, api_url, torrent_info_response):
+    torrent_path = get_torrent_path("red_source")
+    deluge_client = Deluge("http://:supersecret@localhost:8112/json", "fert")
+    deluge_client._label_plugin_enabled = True
+    torrent_info_response["label"] = ""
+
+    with requests_mock.Mocker() as m:
+      m.post(
+        api_url,
+        [
+          {"json": {"result": {"torrents": {}}}},
+          {
+            "json": {
+              "result": {
+                "torrents": {"foo": torrent_info_response},
+              },
+            }
+          },
+        ],
+        additional_matcher=torrent_info_matcher,
+      )
+
+      m.post(api_url, additional_matcher=add_torrent_matcher, json={"result": "abc123"})
+      m.post(api_url, additional_matcher=get_labels_matcher, json={"result": []})
+      m.post(api_url, additional_matcher=add_label_matcher, json={"result": []})
+      m.post(api_url, additional_matcher=apply_label_matcher, json={"result": True})
+
+      deluge_client.inject_torrent("foo", torrent_path)
+
+      assert m.request_history[2].json()["params"][0] == "red_source.fert.torrent"
+      assert m.request_history[-1].json()["params"] == ["abc123", "fert"]
+
   def test_adds_label_if_doesnt_exist(self, api_url, deluge_client, torrent_info_response):
     torrent_path = get_torrent_path("red_source")
     deluge_client._label_plugin_enabled = True

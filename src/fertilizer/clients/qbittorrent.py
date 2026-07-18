@@ -10,8 +10,8 @@ from .torrent_client import TorrentClient
 
 
 class Qbittorrent(TorrentClient):
-  def __init__(self, qbit_url):
-    super().__init__()
+  def __init__(self, qbit_url, torrent_label="fertilizer"):
+    super().__init__(torrent_label)
     self._qbit_url_parts = self._extract_credentials_from_url(qbit_url, "/api/v2")
     self._qbit_cookie = None
 
@@ -48,7 +48,7 @@ class Qbittorrent(TorrentClient):
     if new_torrent_already_exists:
       raise TorrentExistsInClientError(f"New torrent already exists in client ({new_torrent_infohash})")
 
-    injection_filename = f"{Path(new_torrent_filepath).stem}.fertilizer.torrent"
+    injection_filename = f"{Path(new_torrent_filepath).stem}.{self.torrent_label}.torrent"
     torrents = {"torrents": (injection_filename, open(new_torrent_filepath, "rb"), "application/x-bittorrent")}
     params = {
       "autoTMM": False,
