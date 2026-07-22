@@ -7,7 +7,7 @@ from .filesystem import assert_path_exists
 
 class ConfigValidator:
   REQUIRED_KEYS = ["red_key", "ops_key"]
-  TORRENT_CLIENT_KEYS = ["deluge_rpc_url", "transmission_rpc_url", "qbittorrent_url"]
+  TORRENT_CLIENT_KEYS = ["deluge_rpc_url", "transmission_rpc_url", "qbittorrent_url", "rtorrent_rpc_url"]
 
   def __init__(self, config_dict):
     self.config_dict = config_dict
@@ -18,6 +18,7 @@ class ConfigValidator:
       "deluge_rpc_url": self.__is_valid_deluge_url,
       "transmission_rpc_url": self.__is_valid_transmission_rpc_url,
       "qbittorrent_url": self.__is_valid_qbit_url,
+      "rtorrent_rpc_url": self.__is_valid_rtorrent_url,
       "inject_torrents": self.__is_boolean,
       "injection_link_directory": assert_path_exists,
     }
@@ -86,6 +87,13 @@ class ConfigValidator:
     if parsed_url.scheme and parsed_url.netloc:
       return parsed_url.geturl()  # return the parsed URL
     raise ValueError(f'Invalid "qbittorrent_url" provided: {url}')
+
+  @staticmethod
+  def __is_valid_rtorrent_url(url):
+    parsed_url = urlparse(url)
+    if parsed_url.scheme and parsed_url.netloc:
+      return parsed_url.geturl()  # return the parsed URL
+    raise ValueError(f'Invalid "rtorrent_rpc_url" provided: {url}')
 
   @staticmethod
   def __is_valid_deluge_url(url):

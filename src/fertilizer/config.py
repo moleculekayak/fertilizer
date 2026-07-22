@@ -25,6 +25,7 @@ class Config:
         "deluge_rpc_url": env_vars.get("DELUGE_RPC_URL"),
         "transmission_rpc_url": env_vars.get("TRANSMISSION_RPC_URL"),
         "qbittorrent_url": env_vars.get("QBITTORRENT_URL"),
+        "rtorrent_rpc_url": env_vars.get("RTORRENT_RPC_URL"),
         "injection_link_directory": env_vars.get("INJECTION_LINK_DIRECTORY"),
       }.items()
       if value
@@ -58,6 +59,10 @@ class Config:
   @property
   def qbittorrent_url(self) -> ParseResult | None:
     return self._config.get("qbittorrent_url")
+
+  @property
+  def rtorrent_rpc_url(self) -> ParseResult | None:
+    return self._config.get("rtorrent_rpc_url")
 
   @property
   def inject_torrents(self) -> bool:
