@@ -55,6 +55,35 @@ class TestSetup(SetupTeardown):
       assert response
       assert qbit_client._qbit_cookie is not None
 
+  def test_sets_auth_cookie_on_qbit_5_2(self, qbit_client):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="", headers={"Set-Cookie": "QBT_SID_8080=abcd;"})
+
+      response = qbit_client.setup()
+
+      assert response
+      assert qbit_client._qbit_cookie == "QBT_SID_8080=abcd"
+
+  def test_sends_session_cookie_name_back_on_requests(self, qbit_client, torrent_info_response):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="", headers={"Set-Cookie": "QBT_SID_8080=abcd;"})
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      qbit_client.setup()
+      qbit_client.get_torrent_info("infohash")
+
+      assert m.request_history[-1].headers["Cookie"] == "QBT_SID_8080=abcd"
+
+  def test_sends_legacy_sid_cookie_back_on_requests(self, qbit_client, torrent_info_response):
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("auth/login"), text="Ok.", headers={"Set-Cookie": "SID=1234;"})
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      qbit_client.setup()
+      qbit_client.get_torrent_info("infohash")
+
+      assert m.request_history[-1].headers["Cookie"] == "SID=1234"
+
   def test_raises_exception_on_failed_auth(self, qbit_client):
     with requests_mock.Mocker() as m:
       m.post(re.compile("auth/login"), status_code=403)
@@ -78,6 +107,36 @@ class TestGetTorrentInfo(SetupTeardown):
         "save_path": "/tmp/bar/",
         "content_path": "/tmp/bar/foo",
       }
+
+  def test_returns_top_level_directory_for_single_file_in_directory(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/tmp/bar/artist - album/01 track.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/tmp/bar/artist - album"
+
+  def test_returns_content_path_unchanged_for_bare_single_file(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/tmp/bar/foo.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/tmp/bar/foo.flac"
+
+  def test_returns_content_path_unchanged_when_outside_save_path(self, qbit_client, torrent_info_response):
+    torrent_info_response["content_path"] = "/other/place/artist - album/01 track.flac"
+
+    with requests_mock.Mocker() as m:
+      m.post(re.compile("torrents/info"), json=[torrent_info_response])
+
+      response = qbit_client.get_torrent_info("1234")
+
+      assert response["content_path"] == "/other/place/artist - album/01 track.flac"
 
   def test_raises_exception_on_missing_torrent(self, qbit_client):
     with requests_mock.Mocker() as m:
@@ -125,6 +184,7 @@ class TestInjectTorrent(SetupTeardown):
       assert b'name="category"\r\n\r\nfertilizer' in m.request_history[-1].body
       assert b'name="tags"\r\n\r\nfertilizer' in m.request_history[-1].body
       assert b'name="savepath"\r\n\r\n/tmp/bar/' in m.request_history[-1].body
+      assert b'name="useDownloadPath"\r\n\r\nFalse' in m.request_history[-1].body
 
   def test_uses_save_path_override_if_present(self, qbit_client, torrent_info_response):
     torrent_path = get_torrent_path("red_source")
@@ -137,6 +197,7 @@ class TestInjectTorrent(SetupTeardown):
 
       assert "torrents/add" in m.request_history[-1].url
       assert b'name="savepath"\r\n\r\n/tmp/override/' in m.request_history[-1].body
+      assert b'name="useDownloadPath"\r\n\r\nFalse' in m.request_history[-1].body
 
   def test_raises_if_source_torrent_isnt_found_in_client(self, qbit_client):
     with requests_mock.Mocker() as m:

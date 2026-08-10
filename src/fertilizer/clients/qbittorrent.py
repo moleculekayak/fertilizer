@@ -35,7 +35,7 @@ class Qbittorrent(TorrentClient):
         "complete": torrent_completed,
         "label": torrent["category"],
         "save_path": torrent["save_path"],
-        "content_path": torrent["content_path"],
+        "content_path": self.__normalize_content_path(torrent["save_path"], torrent["content_path"]),
       }
     else:
       raise TorrentClientError("Client returned unexpected response")
@@ -55,11 +55,30 @@ class Qbittorrent(TorrentClient):
       "category": self._determine_label(source_torrent_info),
       "tags": self.torrent_label,
       "savepath": save_path_override if save_path_override else source_torrent_info["save_path"],
+      # The injected data is already complete at savepath, so the torrent must
+      # not be routed through the global "incomplete torrents" download path -
+      # otherwise qBittorrent rechecks in the wrong directory and re-downloads.
+      "useDownloadPath": False,
     }
 
     self.__wrap_request("torrents/add", data=params, files=torrents)
 
     return new_torrent_infohash
+
+  @staticmethod
+  def __normalize_content_path(save_path, content_path):
+    # qBittorrent reports the absolute path of the file itself for any torrent
+    # containing a single file, even when that file lives inside a directory.
+    # Fertilizer expects the topmost file or directory of the torrent (which is
+    # what the Deluge and Transmission clients report), so walk the content
+    # path back up to the entry directly beneath the save path.
+    save = Path(save_path)
+    content = Path(content_path)
+
+    if not content.is_relative_to(save) or content.parent == save:
+      return content_path
+
+    return str(save / content.relative_to(save).parts[0])
 
   def __authenticate(self):
     href, username, password = self._qbit_url_parts
@@ -84,10 +103,12 @@ class Qbittorrent(TorrentClient):
     if body and body != "Ok.":
       raise TorrentClientAuthenticationError("qBittorrent login failed: Invalid username or password")
 
-    # session cookied were previously named "SID". 5.2+ uses "QBT_SID_<port>".
+    # The session cookie was previously named "SID". 5.2+ uses "QBT_SID_<port>"
+    # and only accepts the session under that exact name, so we have to keep
+    # the cookie name around and echo it back verbatim on every request.
     cookies = response.cookies.get_dict()
-    self._qbit_cookie = cookies.get("SID") or next(
-      (value for name, value in cookies.items() if name.startswith("QBT_SID")),
+    self._qbit_cookie = next(
+      (f"{name}={value}" for name, value in cookies.items() if name == "SID" or name.startswith("QBT_SID")),
       None,
     )
 
@@ -108,7 +129,7 @@ class Qbittorrent(TorrentClient):
     try:
       response = requests.post(
         url_join(href, path),
-        headers=CaseInsensitiveDict({"Cookie": f"SID={self._qbit_cookie}"}),
+        headers=CaseInsensitiveDict({"Cookie": self._qbit_cookie}),
         data=data,
         files=files,
       )
@@ -117,7 +138,7 @@ class Qbittorrent(TorrentClient):
 
       return response.text
     except requests.RequestException as e:
-      if e.response.status_code == 403:
+      if e.response is not None and e.response.status_code == 403:
         print(e.response.text)
         raise TorrentClientAuthenticationError("Failed to authenticate with qBittorrent")
 
