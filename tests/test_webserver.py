@@ -5,6 +5,7 @@ import requests_mock
 
 from .helpers import SetupTeardown, get_torrent_path, copy_and_mkdir
 
+from fertilizer import webserver
 from fertilizer.parser import calculate_infohash, get_bencoded_data
 from fertilizer.webserver import app as webserver_app
 
@@ -106,6 +107,52 @@ class TestWebserverWebhook(SetupTeardown):
 
       response = client.post("/api/webhook", data={"infohash": real_infohash})
       assert response.status_code == 201
+
+  def test_fallback_reads_each_file_at_most_once_per_miss(self, client, infohash, monkeypatch):
+    for index in range(10):
+      copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/Some Album {index} (2013) [FLAC].torrent")
+
+    read_filepaths = self.__record_fallback_reads(monkeypatch)
+
+    for _ in range(5):
+      read_filepaths.clear()
+      response = client.post("/api/webhook", data={"infohash": infohash})
+
+      assert response.status_code == 404
+      # A miss costs one pass over the input directory and nothing beyond it:
+      # no file is decoded twice within a request, and no request reads more
+      # files than the directory holds.
+      assert len(read_filepaths) == len(set(read_filepaths))
+      assert len(read_filepaths) <= 10
+
+  def test_does_not_scan_when_the_infohash_named_file_exists(self, client, infohash, monkeypatch):
+    copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/{infohash}.torrent")
+    for index in range(10):
+      copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/Some Album {index} (2013) [FLAC].torrent")
+
+    read_filepaths = self.__record_fallback_reads(monkeypatch)
+
+    with requests_mock.Mocker() as m:
+      m.get(re.compile("action=torrent"), json=self.TORRENT_SUCCESS_RESPONSE)
+      m.get(re.compile("action=index"), json=self.ANNOUNCE_SUCCESS_RESPONSE)
+
+      response = client.post("/api/webhook", data={"infohash": infohash})
+
+      assert response.status_code == 201
+      assert read_filepaths == []
+
+  @staticmethod
+  def __record_fallback_reads(monkeypatch):
+    read_filepaths = []
+    original_get_bencoded_data = webserver.get_bencoded_data
+
+    def recording_get_bencoded_data(filepath):
+      read_filepaths.append(filepath)
+      return original_get_bencoded_data(filepath)
+
+    monkeypatch.setattr(webserver, "get_bencoded_data", recording_get_bencoded_data)
+
+    return read_filepaths
 
   def test_returns_okay_if_torrent_already_found(self, client, infohash):
     copy_and_mkdir(get_torrent_path("red_source"), f"/tmp/input/{infohash}.torrent")

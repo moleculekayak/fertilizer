@@ -3,7 +3,7 @@ import os
 
 from flask import Flask, request
 
-from fertilizer.errors import TorrentAlreadyExistsError, TorrentNotFoundError
+from fertilizer.errors import TorrentAlreadyExistsError, TorrentDecodingError, TorrentNotFoundError
 from fertilizer.filesystem import list_files_of_extension
 from fertilizer.parser import calculate_infohash, get_bencoded_data, is_valid_infohash
 from fertilizer.scanner import scan_torrent_file
@@ -69,13 +69,27 @@ def page_not_found(_e):
 
 
 def __find_torrent_filepath_by_infohash(input_directory: str, infohash: str) -> str | None:
-  for filepath in list_files_of_extension(input_directory, ".torrent"):
-    try:
-      torrent_data = get_bencoded_data(filepath)
+  try:
+    filepaths = list_files_of_extension(input_directory, ".torrent")
+  except OSError:
+    # A missing or unreadable input directory is a lookup miss, not a server
+    # error: this is the same 404 the infohash-named lookup returned before.
+    return None
 
-      if torrent_data and calculate_infohash(torrent_data) == infohash.upper():
+  wanted_infohash = infohash.upper()
+
+  for filepath in filepaths:
+    # get_bencoded_data returns None for anything it cannot read or decode, and
+    # bencode happily decodes to values that are not torrent dictionaries.
+    torrent_data = get_bencoded_data(filepath)
+
+    if not isinstance(torrent_data, dict):
+      continue
+
+    try:
+      if calculate_infohash(torrent_data) == wanted_infohash:
         return filepath
-    except Exception:
+    except TorrentDecodingError:
       continue
 
   return None
