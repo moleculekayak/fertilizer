@@ -27,9 +27,7 @@ def method_matcher(name):
 
 
 def method_hash_matcher(name, infohash):
-  return lambda request: (
-    f"<methodName>{name}</methodName>" in (request.text or "") and infohash in (request.text or "")
-  )
+  return lambda request: f"<methodName>{name}</methodName>" in (request.text or "") and infohash in (request.text or "")
 
 
 def _mock_torrent_info(
